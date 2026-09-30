@@ -22,6 +22,18 @@ st.set_page_config(
 # -----------------------------
 st.markdown("""
 <style>
+[data-testid="stHeader"] {
+    background: transparent;
+    height: 0rem;
+}
+
+[data-testid="stToolbar"] {
+    display: none;
+}
+
+[data-testid="stDecoration"] {
+    display: none;
+}
 /* Hide Streamlit chrome / sidebar completely */
 [data-testid="stSidebar"],
 [data-testid="collapsedControl"] { display: none !important; }
