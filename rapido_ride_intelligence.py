@@ -26,6 +26,36 @@ st.markdown("""
     background: transparent;
     height: 0rem;
 }
+/* Clickable top navigation */
+div[data-testid="stRadio"] > div {
+    gap: 6px;
+}
+
+div[data-testid="stRadio"] label {
+    background: #111111 !important;
+    border: 1px solid #2A2A2A !important;
+    border-radius: 9px !important;
+    padding: 7px 14px !important;
+    color: #A0A0A0 !important;
+    cursor: pointer !important;
+}
+
+div[data-testid="stRadio"] label:has(input:checked) {
+    background: #FFD21F !important;
+    border-color: #FFD21F !important;
+    color: #080808 !important;
+}
+
+div[data-testid="stRadio"] label p {
+    color: inherit !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+}
+
+div[data-testid="stRadio"] input {
+    display: none !important;
+}
 
 [data-testid="stToolbar"] {
     display: none;
@@ -212,29 +242,15 @@ df["is_cancelled"] = df["ride_status"].astype(str).str.lower().str.contains("can
 # -----------------------------
 # Top navigation
 # -----------------------------
-st.markdown("""
-<div class="topbar">
-  <div class="brand-wrap">
-    <div class="brand-mark">🛵</div>
-    <div>
-      <div class="brand">Rapido Ride Intelligence</div>
-      <div class="brand-sub">Mobility analytics & operational performance</div>
-    </div>
-  </div>
-  <div class="nav">
-    <div class="nav-item active">Overview</div>
-    <div class="nav-item">Demand</div>
-    <div class="nav-item">Revenue</div>
-    <div class="nav-item">Operations</div>
-    <div class="nav-item">Locations</div>
-  </div>
-  <div class="profile"><div class="avatar">JJ</div> Analyst</div>
-</div>
-""", unsafe_allow_html=True)
-
+nav = st.radio(
+    "Navigation",
+    ["Overview", "Demand", "Revenue", "Operations", "Locations"],
+    horizontal=True,
+    label_visibility="collapsed",
+)
 # -----------------------------
-# Hero
-# -----------------------------
+#hero 
+#------------------------------
 st.markdown("""
 <div class="hero">
   <div>
