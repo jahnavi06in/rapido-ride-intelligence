@@ -4,8 +4,22 @@ A professional **Streamlit-based ride analytics dashboard** for analyzing ride d
 
 ## Dashboard Preview
 
-The dashboard provides a dark, modern analytics interface with Rapido-inspired yellow accents and interactive filters.
-<img width="528" height="597" alt="image" src="https://github.com/user-attachments/assets/54ec4791-268c-456c-9c62-a7d0f868d679" />
+### Executive Overview
+
+Rapido Ride Intelligence provides an interactive view of ride demand, revenue, operational performance, and location analytics.
+
+The dashboard combines KPI cards, interactive filters, and Plotly visualizations to help explore:
+
+- Ride demand by hour and date
+- Completed-ride revenue
+- Completion and cancellation rates
+- Service performance
+- Payment-method revenue
+- Trip duration and distance
+- Pickup and destination locations
+- Frequently used routes
+
+Users can filter the dashboard by service, ride status, payment method, and analysis period.
 
 ## Features
 
