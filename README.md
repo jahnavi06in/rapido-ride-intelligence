@@ -1,125 +1,225 @@
-# 🛵 Rapido Ride Intelligence
+# Rapido Ride Intelligence
 
-An interactive **ride analytics and operations intelligence dashboard** built using Python, Streamlit, Pandas, and Plotly.
+A professional **Streamlit-based ride analytics dashboard** for analyzing ride demand, revenue, operations, and location performance using the `rides_data.csv` dataset.
 
-The project transforms ride-level data into interactive business insights across **demand, revenue, cancellations, operations, payments, and locations**.
+## Dashboard Preview
 
----
+The dashboard provides a dark, modern analytics interface with Rapido-inspired yellow accents and interactive filters.
 
-## 📊 Dashboard Preview
-
-![Rapido Ride Intelligence Dashboard](dashboard.png)
-
----
-
-## 🎯 Project Objective
-
-The objective of this project is to analyze ride-level data and provide a clear view of operational and business performance through an interactive dashboard.
-
-The analysis focuses on:
-
-- Ride demand patterns
-- Ride completion and cancellations
-- Revenue performance
-- Fare and trip-distance relationships
-- Service performance
-- Payment behavior
-- Pickup and destination patterns
-- Time-based operational trends
-
----
-
-## 🔑 Key Performance Indicators
-
-The dashboard tracks important business KPIs including:
-
-- **Total Rides**
-- **Completed Rides**
-- **Cancellation Rate**
-- **Total Revenue**
-- **Average Fare**
-- **Average Trip Distance**
-
-> Revenue is calculated using completed rides.
-
----
-
-## 📈 Dashboard Sections
+## Features
 
 ### Overview
-Provides a high-level summary of ride activity and operational performance.
 
-### Demand Intelligence
-Analyzes ride demand across:
+* Total Rides
+* Total Revenue
+* Completion Rate
+* Cancellations
+* Average Fare
+* Ride Demand by Hour
+* Ride Outcome Mix
+* Service Volume
+* Daily Ride Trend
+* Business Insights
 
-- Hour of day
-- Day
-- Date
-- Service type
+### Demand Analytics
+
+* Ride Demand by Hour
+* Rides by Day of Week
+* Demand by Service and Hour
+* Monthly Ride Volume
 
 ### Revenue Analytics
-Examines:
 
-- Daily revenue
-- Average fare
-- Fare vs. trip distance
-- Revenue trends
+* Daily Revenue Trend
+* Revenue by Payment Method
+* Average Fare by Service
+* Fare Distribution
 
-### Operations Intelligence
-Analyzes:
+> Revenue calculations use **completed rides only**. Missing fares from cancelled rides are not treated as revenue.
 
-- Completed vs. cancelled rides
-- Cancellation rate
-- Cancellation pressure by hour
-- Completion rate by service
+### Operations Analytics
 
-### Location Intelligence
-Identifies:
+* Ride Status by Service
+* Trip Duration Distribution
+* Completion Rate by Service
+* Cancellation Rate by Hour
 
-- Top pickup locations
-- Top destinations
-- Ride concentration across locations
+### Location Analytics
+
+* Top Pickup Locations
+* Top Destination Locations
+* Top Routes
+* Route analysis using `Source → Destination`
 
 ### Ride Explorer
-Provides an interactive view of the underlying ride-level data.
 
----
+* Interactive filtered ride table
+* Displays up to 100 records
+* Sorts rides by date where available
 
-## 💡 Business Questions
+## Interactive Filters
 
-This dashboard helps explore questions such as:
+The dashboard includes global filters for:
 
-- When is ride demand highest?
-- Which services have the highest ride volume?
-- What percentage of rides are cancelled?
-- How does trip distance relate to fare?
-- Which payment methods are most frequently used?
-- Which pickup locations generate the most rides?
-- Which destinations receive the highest ride volume?
-- During which hours is cancellation pressure highest?
-- How does ride activity change over time?
+* Service
+* Ride Status
+* Payment Method
+* Analysis Period
 
----
+All filters dynamically affect the KPIs, charts, insights, and Ride Explorer.
 
-## 🛠️ Tech Stack
+## Dataset
 
-| Technology | Purpose |
-|---|---|
-| Python | Data analysis and application logic |
-| Pandas | Data cleaning and transformation |
-| NumPy | Numerical operations |
-| Streamlit | Interactive dashboard development |
-| Plotly | Interactive data visualization |
-
----
-
-## 📂 Project Structure
+The application uses:
 
 ```text
-rapido-ride-intelligence/
+rides_data.csv
+```
+
+Expected columns:
+
+```text
+services
+date
+time
+ride_status
+source
+destination
+duration
+ride_id
+distance
+ride_charge
+misc_charge
+total_fare
+payment_method
+```
+
+The application safely handles:
+
+* Missing values
+* Invalid numeric values
+* Invalid dates
+* Missing cancelled-ride fares
+* Empty filter results
+
+## Technology Stack
+
+* Python
+* Streamlit
+* Pandas
+* NumPy
+* Plotly
+
+## Project Structure
+
+```text
+Rapido Ride Intelligence/
 │
 ├── rapido_ride_intelligence.py
 ├── rides_data.csv
-├── dashboard.png
-├── README.md
-└── requirements.txt
+├── requirements.txt
+└── README.md
+```
+
+## Installation
+
+Clone the repository:
+
+```bash
+git clone <your-repository-url>
+cd <your-repository-folder>
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Run Locally
+
+Start the Streamlit application:
+
+```bash
+python -m streamlit run rapido_ride_intelligence.py
+```
+
+The dashboard will be available at:
+
+```text
+http://localhost:8501
+```
+
+## Requirements
+
+The project dependencies are listed in `requirements.txt`:
+
+```text
+streamlit>=1.35.0
+pandas>=2.0.0
+numpy>=1.24.0
+plotly>=5.18.0
+```
+
+## Data Handling
+
+The application converts the following fields into appropriate formats:
+
+* `date` → datetime
+* `time` → hour/time information
+* `duration` → numeric
+* `distance` → numeric
+* `ride_charge` → numeric
+* `misc_charge` → numeric
+* `total_fare` → numeric
+
+Cancelled rides with missing fare values are retained as rides but are **excluded from revenue and average-fare calculations**.
+
+## Dashboard Design
+
+The interface uses:
+
+* Dark black background
+* Dark analytics cards
+* Rapido-inspired yellow accent
+* Interactive Streamlit navigation
+* Plotly visualizations
+* Responsive column layouts
+* No sidebar
+* Minimal animations
+* Professional analytics-focused design
+
+## Navigation
+
+The dashboard contains five interactive sections:
+
+```text
+Overview
+Demand
+Revenue
+Operations
+Locations
+```
+
+Navigation is implemented using Streamlit controls rather than static HTML navigation.
+
+## Business Use Cases
+
+This dashboard can be used to analyze:
+
+* Ride demand patterns
+* Peak operating hours
+* Service utilization
+* Revenue performance
+* Payment-method contribution
+* Completion and cancellation rates
+* Trip duration
+* Pickup and destination concentration
+* Frequently used routes
+
+## Notes
+
+For privacy and repository security, avoid committing sensitive or production ride-level data to a public GitHub repository.
+
+The dashboard is designed to work directly with the provided `rides_data.csv` structure without requiring additional geographic or external data sources.
+
