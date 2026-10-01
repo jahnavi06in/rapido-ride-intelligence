@@ -5,6 +5,7 @@ A professional **Streamlit-based ride analytics dashboard** for analyzing ride d
 ## Dashboard Preview
 
 The dashboard provides a dark, modern analytics interface with Rapido-inspired yellow accents and interactive filters.
+<img width="528" height="597" alt="image" src="https://github.com/user-attachments/assets/54ec4791-268c-456c-9c62-a7d0f868d679" />
 
 ## Features
 
