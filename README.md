@@ -20,6 +20,11 @@ The dashboard combines KPI cards, interactive filters, and Plotly visualizations
 - Frequently used routes
 
 Users can filter the dashboard by service, ride status, payment method, and analysis period.
+## Live Dashboard
+
+🚀 **[Open Rapido Ride Intelligence Dashboard](https://rapido-ride-intelligence-po3rarnj2dd66w4pzlt94e.streamlit.app/)**
+
+Explore the interactive dashboard for ride demand, revenue, operations, and location analytics.
 
 ## Features
 
