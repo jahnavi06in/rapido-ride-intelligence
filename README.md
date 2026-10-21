@@ -17,11 +17,6 @@
 
 
 
-
-![Data Quality](data_quality.png)
-
-
-
 ---
 
 ## 📌 1. Business Problem
