@@ -1,213 +1,464 @@
-# 🚖 Rapido Ride Intelligence
+🚖 Rapido Ride Intelligence
 
-**End-to-end ride-hailing analytics: an interactive dashboard, revenue-leakage quantification, statistical testing, SQL analysis, and a data-validity audit on 50,000 trips.**
+End-to-end ride-hailing analytics: interactive dashboard, revenue-leakage estimation, statistical testing, SQL analysis, and data-quality auditing across 50,000 rides.
 
-`Python` `SQL` `Pandas` `NumPy` `SciPy` `Plotly` `Streamlit`
+"Python" "SQL" "Pandas" "NumPy" "SciPy" "Plotly" "Streamlit"
 
-🔗 **[Live Dashboard](https://rapido-ride-intelligence-po3rarnj2dd66w4pzlt94e.streamlit.app/)**
-
-
-
-![Overview](overview.png)
-
-
-
-
-![Operations](operations.png)
-
-
+🔗 "Live Dashboard" (https://rapido-ride-intelligence-po3rarnj2dd66w4pzlt94e.streamlit.app/)
 
 ---
 
-## 📌 1. Business Problem
+📸 Dashboard Preview
 
-A ride-hailing operator earns revenue only when a booked ride is completed. Every cancelled ride is lost revenue, wasted driver time, and a worse rider experience. Leadership needs to know:
+Overview
 
-1. How much revenue is cancellation costing us?
-2. Is cancellation concentrated in a service, time slot or day we can target?
-3. Is the data reliable enough to base pricing and demand decisions on?
+"Overview" (overview.png)
 
-## 🎯 2. Project Objectives
+Operations
 
-- Analyse ride demand patterns by hour, day and month
+"Operations" (operations.png)
+
+---
+
+📌 1. Business Problem
+
+A ride-hailing operator earns revenue when a booked ride is completed. Cancellations can create revenue leakage, operational inefficiency, and a poorer rider experience.
+
+This project answers:
+
+1. How much revenue could cancellations represent as an estimated leakage opportunity?
+2. Is cancellation concentrated in a service, hour, or weekday?
+3. Are pricing and trip measurements internally consistent?
+4. Can the dataset be trusted for business analysis?
+5. What operational decisions can be supported by the available data?
+
+---
+
+🎯 2. Project Objectives
+
+- Analyse ride-demand patterns by hour, day, and month
 - Measure revenue from completed rides
 - Evaluate completion and cancellation performance
 - Compare service-level performance
 - Analyse payment-method contribution
 - Understand trip duration and distance patterns
-- Identify high-demand pickup, destination and route patterns
-- Quantify revenue lost to cancellations
-- Test whether the data is reliable
-- Deliver everything as an interactive business-intelligence tool
+- Identify high-demand pickup, destination, and route patterns
+- Estimate revenue leakage associated with cancellations
+- Perform data-quality and validity checks
+- Validate analytical results using SQL
+- Deliver the analysis through an interactive business-intelligence dashboard
 
-## 🧩 3. Solution Overview
+---
 
-| Layer | What I built | Business purpose |
-|-------|--------------|------------------|
-| KPI layer | Revenue, completion rate, average fare, cancellations, with filters | One source of truth for performance |
-| Leakage model | Cancelled rides × average completed fare | Puts a rupee value on the problem |
-| Driver analysis | Chi-square tests across service, hour, weekday | Separates real patterns from noise |
-| Validity audit | Fare-distance correlation, speed checks, route uniqueness | Tests whether insights can be trusted |
-| SQL layer | Six queries reproducing the KPIs and audits | Cross-checks Python results |
-| Dashboard | 6-page Streamlit app with global filters | Self-serve exploration for stakeholders |
+🧩 3. Solution Overview
 
-## 🔎 4. Key Findings
+Layer| What I built| Business purpose
+KPI Layer| Revenue, completion rate, average fare, cancellations, with filters| Provides a consistent performance view
+Leakage Model| Cancelled rides × average completed fare| Estimates the revenue opportunity associated with cancellations
+Driver Analysis| Chi-square tests across service, hour, and weekday| Tests whether cancellation patterns differ meaningfully
+Data-Quality Audit| Fare-distance correlation, speed checks, route uniqueness| Identifies potential data or measurement issues
+SQL Layer| Six analytical queries| Cross-checks key Python calculations
+Dashboard| Six-page Streamlit application with global filters| Enables interactive business exploration
 
-| # | Finding | Evidence |
-|---|---------|----------|
-| 1 | **Cancellations leak an estimated ₹2.76M, about 10% of potential revenue.** | 5,036 cancelled rides × ₹547 avg fare. Completed revenue: ₹24.6M from 44,964 rides. |
-| 2 | **Cancellation is uniform: ~10% across every service, hour and weekday.** | Chi-square p-values: service 0.31, hour 0.80, weekday 0.72 (all > 0.05). |
-| 3 | **Fare does not depend on distance.** | corr(distance, fare) = −0.005. Avg fare is ₹544-549 in every distance band. |
-| 4 | **~10% of completed trips are physically implausible.** | 4,415 rides imply >80 km/h (max 300 km/h). corr(distance, duration) = 0.008. |
-| 5 | **Demand is flat once partial months are normalised.** | Rides per day: Jun 806, Jul 824, Aug 823. |
-| 6 | **Route-level analysis carries no signal.** | 49,993 unique routes in 50,000 rides; only 7 repeat. |
+---
 
-Other headline numbers: 50,000 rides, 17 Jun to 16 Aug 2024, 89.9% completion rate, ₹547 average fare, five services (bike, auto, cab economy, parcel, bike lite).
+🔎 4. Key Findings
 
-## 💡 5. Decisions This Supports
+#| Finding| Evidence
+1| Cancellations represent an estimated ₹2.76M revenue opportunity.| 5,036 cancelled rides × ₹547 average completed fare
+2| Cancellation rates do not show statistically significant differences across service, hour, or weekday.| Chi-square p-values: service 0.31, hour 0.80, weekday 0.72
+3| Fare has almost no linear relationship with distance in this dataset.| Pearson correlation = −0.005
+4| 4,415 completed rides imply speeds above 80 km/h.| Maximum implied speed = 300 km/h
+5| Daily demand is relatively stable after normalising partial months.| Jun: 806/day, Jul: 824/day, Aug: 823/day
+6| Route repetition is extremely low.| 49,993 unique routes across 50,000 rides
 
-- **Prioritise cancellation reduction.** Every 1 percentage point cut recovers about ₹274K over this 61-day window (500 rides × ₹547), roughly ₹1.6M annualised at constant volume (sensitivity estimate, not a forecast).
-- **Run platform-wide interventions, not segment-specific ones.** No service, hour or weekday is meaningfully worse.
-- **Fix data before pricing or demand modelling.** Fares unrelated to distance means any pricing or peak-hour model on this data would be unreliable.
-- **Instrument cancellations.** Capture who cancelled and why; the current data cannot explain the 10%.
+Headline Metrics
 
-## 📊 6. Dashboard Pages
+- 50,000 total rides
+- 44,964 completed rides
+- 5,036 cancelled rides
+- 89.9% completion rate
+- 10.1% cancellation rate
+- ₹24.6M completed-ride revenue
+- ₹547 average completed fare
+- Dataset period: 17 Jun – 16 Aug 2024
+- Five services: Bike, Auto, Cab Economy, Parcel, Bike Lite
 
-**Overview**: executive KPIs (total rides, total revenue, completion rate, cancellations, average fare), ride demand by hour, ride outcome mix, service volume, daily ride trend, and business-insight cards.
+---
 
-**Demand**: hourly demand, rides by day of week, demand by service and hour, monthly volume, daily trends. Shows peak hours, high-demand days and low-activity periods.
+💡 5. Business Decisions Supported
 
-**Revenue**: daily revenue trend, revenue by payment method, average fare by service, fare distribution. All based on completed rides.
+1. Prioritise cancellation reduction
 
-**Operations**: ride status by service, completion rate by service, cancellation rate by hour, trip duration distribution.
+A 1-percentage-point reduction in cancellations corresponds to approximately ₹274K of estimated revenue opportunity over this dataset window, based on 500 rides × ₹547 average completed fare.
 
-**Locations**: top pickup locations, top destinations, and popular routes (Source → Destination). No external map data required.
+This is a sensitivity estimate, not a forecast.
 
-**Ride Explorer**: filtered ride-level table (up to 100 records) with service, status, payment method, pickup, destination, fare and trip details.
+2. Use platform-wide interventions
 
-## 🎛️ 7. Interactive Filters
+The statistical tests do not show meaningful cancellation differences by service, hour, or weekday. Therefore, the available data does not justify targeting only one segment.
 
-| Filter | Description |
-|--------|-------------|
-| Service | Filter by service type |
-| Ride Status | Completed, cancelled and other outcomes |
-| Payment Method | Filter by payment type |
-| Analysis Period | Select a date range |
+3. Validate pricing data before modelling
 
-Filters update the KPI cards, charts, insights, Ride Explorer and every page. The app safely handles filters that return no records.
+The near-zero fare-distance correlation suggests that pricing relationships should be investigated before using this dataset for pricing or demand modelling.
 
-## 🗂️ 8. Dataset
+4. Capture cancellation reasons
 
-`rides_data.csv`: 50,000 rides, 17 Jun to 16 Aug 2024.
+The current dataset does not contain cancellation reason, cancelling party, or driver-side information. Adding these fields would make cancellation diagnosis much stronger.
 
-Columns: `services`, `date`, `time`, `ride_status`, `source`, `destination`, `duration`, `ride_id`, `distance`, `ride_charge`, `misc_charge`, `total_fare`, `payment_method`.
+---
 
-## 🧹 9. Data Processing
+📊 6. Dashboard Pages
 
-| Column | Transformation |
-|--------|----------------|
-| date | Converted to datetime |
-| time | Parsed into hour |
-| duration, distance | Converted to numeric |
-| ride_charge, misc_charge, total_fare | Converted to numeric |
+Overview
 
-The app safely handles missing values, invalid numbers, invalid dates, missing cancelled-ride fares and empty filter results.
+Executive KPIs including:
 
-**Data validation:** checked duplicates (none), nulls, speed outliers and fare-per-km extremes.
+- Total rides
+- Completed rides
+- Cancellation rate
+- Completion rate
+- Revenue
+- Average fare
+- Hourly demand
+- Ride outcome mix
+- Service volume
+- Daily ride trend
+- Business insights
 
-## 💰 10. Revenue Methodology
+Demand
 
-- Revenue and average fare use **completed rides only**.
-- 5,036 cancelled rides have no fare or payment method. They are excluded from revenue but kept for demand, cancellation, operations and ride-status analysis.
-- Missing fares are never treated as ₹0.
+- Hourly demand
+- Rides by weekday
+- Demand by service and hour
+- Monthly volume
+- Daily ride trends
 
-| Metric | Definition |
-|--------|------------|
-| Revenue | Sum of `total_fare` for completed rides |
-| Completion rate | Completed ÷ total rides |
-| Revenue leakage | Cancelled rides × average completed fare |
-| Implied speed | `distance ÷ (duration ÷ 60)` in km/h |
+Revenue
 
-## 🧪 11. Statistical Approach
+- Daily revenue trend
+- Revenue by payment method
+- Average fare by service
+- Fare distribution
 
-- Chi-square test of independence for cancellation vs service, hour and weekday (α = 0.05).
-- Pearson correlation for pricing and duration logic.
-- Months normalised by active days, since June and August are partial.
-- Assumption: the average completed fare is a fair proxy for what a cancelled ride would have earned.
+Revenue metrics are based on completed rides.
 
-## 🗃️ 12. SQL Analysis
+Operations
 
-`sql/queries.sql` contains six queries, run with `python sql/run_sql.py`:
+- Ride status by service
+- Completion rate by service
+- Cancellation rate by hour
+- Trip-duration distribution
+
+Locations
+
+- Top pickup locations
+- Top destinations
+- Popular source → destination routes
+
+Data Quality
+
+- Fare-distance relationship
+- Distance-duration relationship
+- Implied-speed validation
+- Speed outlier detection
+- Fare-per-kilometre checks
+- Route uniqueness
+- Missing-value checks
+
+---
+
+🎛️ 7. Interactive Filters
+
+Filter| Description
+Service| Filter by service type
+Ride Status| Completed, cancelled, and other outcomes
+Payment Method| Filter by payment type when required
+Analysis Period| Select a date range
+
+Important: The default payment-method selection does not remove cancelled rides with missing payment information. This preserves the complete ride population for cancellation and operational analysis.
+
+Filters update the relevant dashboard KPIs, charts, and analytical views.
+
+---
+
+🗂️ 8. Dataset
+
+"rides_data.csv" contains 50,000 rides covering:
+
+17 Jun 2024 – 16 Aug 2024
+
+Columns
+
+services
+date
+time
+ride_status
+source
+destination
+duration
+ride_id
+distance
+ride_charge
+misc_charge
+total_fare
+payment_method
+
+---
+
+🧹 9. Data Processing & Validation
+
+Field| Processing
+date| Converted to datetime
+time| Parsed into hour
+duration| Converted to numeric
+distance| Converted to numeric
+ride_charge| Converted to numeric
+misc_charge| Converted to numeric
+total_fare| Converted to numeric
+
+Data-quality checks
+
+The analysis checks:
+
+- Duplicate records
+- Missing values
+- Invalid numeric values
+- Invalid dates
+- Missing cancelled-ride fares
+- Fare-per-kilometre extremes
+- Implied speed outliers
+- Distance-duration relationship
+- Route uniqueness
+
+---
+
+💰 10. Revenue Methodology
+
+Revenue calculations use completed rides only.
+
+The 5,036 cancelled rides do not contain fare/payment information. They remain part of the overall ride population and are included in demand, cancellation, operational, and ride-status analysis.
+
+Metric Definitions
+
+Metric| Definition
+Revenue| Sum of "total_fare" for completed rides
+Completion Rate| Completed rides ÷ total rides
+Cancellation Rate| Cancelled rides ÷ total rides
+Average Fare| Completed revenue ÷ completed rides
+Estimated Revenue Leakage| Cancelled rides × average completed fare
+Implied Speed| Distance ÷ (Duration ÷ 60)
+
+Revenue leakage is an estimate, not recorded lost revenue.
+
+It assumes the average completed fare is a reasonable proxy for what a cancelled ride could have generated.
+
+---
+
+🧪 11. Statistical Approach
+
+Chi-Square Tests
+
+Cancellation outcomes are tested against:
+
+- Service
+- Hour
+- Weekday
+
+Significance level:
+
+α = 0.05
+
+Correlation Analysis
+
+Pearson correlation is used to investigate:
+
+- Distance vs fare
+- Distance vs duration
+
+Monthly Normalisation
+
+June and August are partial months, so monthly demand is compared using rides per active day rather than raw monthly totals.
+
+---
+
+🗃️ 12. SQL Analysis
+
+"queries.sql" contains six analytical queries:
+
 1. Headline KPIs
-2. Estimated revenue lost to cancellations
+2. Estimated cancellation revenue leakage
 3. Cancellation rate by service
-4. Fare vs distance band
-5. Impossible trips (speed above 80 km/h)
+4. Fare by distance band
+5. Impossible trips using implied speed
 6. Rides per day by month
 
-## 🛠️ 13. Tech Stack
+SQL is used as a cross-check against the Python analysis.
 
-| Tool | Purpose |
-|------|---------|
-| Python | Core language |
-| Streamlit | Interactive dashboard |
-| Pandas, NumPy | Data manipulation |
-| SciPy | Statistical tests |
-| Plotly | Interactive charts |
-| SQL (SQLite) | Query-based analysis |
+---
 
-## 🎨 14. Dashboard Design
+🛠️ 13. Tech Stack
 
-Dark theme with Rapido-inspired yellow accent, KPI cards, responsive column layouts, and real Streamlit navigation (no static HTML nav).
+Technology| Purpose
+Python| Core analytics
+Pandas| Data manipulation
+NumPy| Numerical operations
+SciPy| Statistical testing
+Plotly| Interactive visualisation
+Streamlit| Dashboard application
+SQL / SQLite| Analytical queries
 
-## 📁 15. Project Structure
+---
 
-```
-rapido_ride_intelligence.py    Streamlit dashboard (6 pages, global filters)
-analysis/findings.py           Reproduces every number in this README
-sql/queries.sql, run_sql.py    SQL KPIs and audits
-rides_data.csv                 Ride-level dataset
-requirements.txt               Dependencies
-README.md                      Documentation
-```
+🎨 14. Dashboard Design
 
-## 🚀 16. Run It
+The dashboard uses:
 
-Requires Python 3.9+.
+- Rapido-inspired visual styling
+- KPI cards
+- Responsive layouts
+- Interactive Plotly charts
+- Global filters
+- Multi-page Streamlit navigation
+- Business-focused insight cards
 
-```bash
+The goal is to make analytical results understandable to both technical and non-technical stakeholders.
+
+---
+
+📁 15. Project Structure
+
+rapido-ride-intelligence/
+│
+├── rapido_ride_intelligence.py
+├── rides_data.csv
+├── findings.py
+├── queries.sql
+├── run_sql.py
+├── requirements.txt
+├── README.md
+│
+├── overview.png
+├── operations.png
+├── demand.png
+├── revenue.png
+└── performance.png
+
+---
+
+🚀 16. Run Locally
+
+1. Clone the repository
+
+git clone https://github.com/jahnavi06in/rapido-ride-intelligence.git
+cd rapido-ride-intelligence
+
+2. Install dependencies
+
 pip install -r requirements.txt
-python -m streamlit run rapido_ride_intelligence.py   # dashboard
-python analysis/findings.py                           # findings and tests
-python sql/run_sql.py                                 # SQL queries
-```
 
-Dashboard opens at `http://localhost:8501`.
+3. Run the dashboard
 
-## ☁️ 17. Deployment
+python -m streamlit run rapido_ride_intelligence.py
 
-Deployed on Streamlit Community Cloud, so it runs in the browser with no installation. It redeploys automatically when the GitHub repo is updated.
+4. Run the Python analysis
 
-## 🏢 18. Business Use Cases
+python findings.py
 
-- **Demand planning:** peak hours, high-demand days, monthly patterns, service-level demand
-- **Revenue management:** revenue trends, average fare, payment-method contribution
-- **Operational performance:** completion and cancellation rates, trip duration
-- **Location intelligence:** high-volume pickups, popular destinations, frequent routes
+5. Run the SQL analysis
 
-## 🔐 19. Data Privacy
+python run_sql.py
 
-Dataset contains no personal information. Before publishing any ride data, remove identifiers and prefer anonymised or sample data.
+The dashboard opens at:
 
-## ⚠️ 20. Limitations
+http://localhost:8501
 
-- Two-month window; no seasonality or trend can be assessed.
-- No cancellation reason, canceller, driver or city fields.
-- Data-validity issues (findings 3 and 4) suggest synthetic data or a pricing-pipeline fault, so findings 2-6 should be re-run on production data.
+---
 
-## 🔮 21. Next Steps
+☁️ 17. Deployment
 
-- Re-run the full analysis on verified production data.
-- Add cancellation-reason and driver-side fields, then model cancellation probability (logistic regression).
-- Forecast daily rides and revenue once longer history is available.
-- Add geographic map visualisations and downloadable reports.
+The dashboard is deployed using Streamlit Community Cloud and can be accessed through the live dashboard link at the top of this README.
+
+---
+
+🏢 18. Business Use Cases
+
+Demand Planning
+
+Identify:
+
+- Peak hours
+- High-demand days
+- Service-level demand
+- Monthly demand patterns
+
+Revenue Management
+
+Analyse:
+
+- Completed revenue
+- Average fare
+- Revenue trends
+- Payment-method contribution
+- Potential cancellation leakage
+
+Operational Performance
+
+Monitor:
+
+- Completion rate
+- Cancellation rate
+- Ride duration
+- Service performance
+
+Location Intelligence
+
+Explore:
+
+- High-volume pickup locations
+- Popular destinations
+- Frequent routes
+
+---
+
+🔐 19. Data Privacy
+
+The published dataset should contain no personally identifiable information.
+
+Before publishing any real-world ride data, remove personal identifiers and use anonymised or appropriately shareable data.
+
+---
+
+⚠️ 20. Limitations
+
+- The dataset covers approximately two months and cannot establish long-term seasonality.
+- Cancellation reason is unavailable.
+- Cancelling party is unavailable.
+- Driver-level information is unavailable.
+- City/geographic metadata is limited.
+- The fare-distance relationship appears inconsistent with a typical distance-based pricing model.
+- High implied speeds suggest potential data-quality or measurement issues.
+- Findings should therefore be validated against verified production data before operational deployment.
+
+---
+
+🔮 21. Next Steps
+
+- Re-run the analysis on verified production data.
+- Add cancellation reason and driver-side fields.
+- Build a cancellation-probability model.
+- Forecast daily rides and revenue using longer historical data.
+- Add geographic visualisation.
+- Add downloadable analytical reports.
+- Add automated data-quality monitoring.
+
+---
+
+👩‍💻 Author
+
+Jahnavi J
+
+BCA Student | Data Analytics | Python | SQL | Power BI | Streamlit
+
+GitHub:
+https://github.com/jahnavi06in
