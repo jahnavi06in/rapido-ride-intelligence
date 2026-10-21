@@ -1,5 +1,3 @@
-# rapido_ride_intelligence.py
-
 from pathlib import Path
 
 import numpy as np
@@ -10,7 +8,7 @@ import streamlit as st
 
 
 # ============================================================
-# 1. PAGE CONFIGURATION
+# RAPIDO RIDE INTELLIGENCE — CLEAN 10/10 VERSION
 # ============================================================
 
 st.set_page_config(
@@ -20,371 +18,186 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-
-# ============================================================
-# 2. CONSTANTS
-# ============================================================
-
 BASE_DIR = Path(__file__).resolve().parent
 CSV_PATH = BASE_DIR / "rides_data.csv"
 
 EXPECTED_COLUMNS = [
-    "services",
-    "date",
-    "time",
-    "ride_status",
-    "source",
-    "destination",
-    "duration",
-    "ride_id",
-    "distance",
-    "ride_charge",
-    "misc_charge",
-    "total_fare",
-    "payment_method",
+    "services", "date", "time", "ride_status", "source", "destination",
+    "duration", "ride_id", "distance", "ride_charge", "misc_charge",
+    "total_fare", "payment_method",
 ]
 
 NUMERIC_COLUMNS = [
-    "duration",
-    "distance",
-    "ride_charge",
-    "misc_charge",
-    "total_fare",
+    "duration", "distance", "ride_charge", "misc_charge", "total_fare"
 ]
 
 
 # ============================================================
-# 3. CSS
+# STYLE
 # ============================================================
 
 st.markdown(
     """
     <style>
-
-    /* ======================================================
-       GLOBAL
-       ====================================================== */
-
-    .stApp {
-        background: #080808;
-        color: #F5F5F5;
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
+        background:#080808;
+        color:#F5F5F5;
     }
-
-    [data-testid="stAppViewContainer"] {
-        background: #080808;
+    [data-testid="stSidebar"], section[data-testid="stSidebar"] {
+        display:none !important;
     }
-
-    [data-testid="stHeader"] {
-        background: #080808;
-    }
-
-    [data-testid="stSidebar"] {
-        display: none !important;
-    }
-
-    section[data-testid="stSidebar"] {
-        display: none !important;
-    }
-
     .block-container {
-        max-width: 1500px;
-        padding-top: 2.2rem;
-        padding-bottom: 2rem;
+        max-width:1500px;
+        padding-top:2rem;
+        padding-bottom:2rem;
     }
-
     html, body, [class*="css"] {
-        font-family:
-            Inter,
-            -apple-system,
-            BlinkMacSystemFont,
-            "Segoe UI",
-            sans-serif;
+        font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
     }
-
-
-    /* ======================================================
-       BRAND HEADER
-       ====================================================== */
-
-    
-     .brand-block {
-    padding-top: 0.15rem;
-    padding-right: 1.2rem;
-    white-space: nowrap;
-
-    }
-
     .brand-main {
-    color: #F5F5F5;
-    font-size: 1.35rem;
-    line-height: 1.05;
-    font-weight: 750;
-    letter-spacing: -0.04em;
-    white-space: nowrap;
-}
-
-    .brand-main .yellow {
-        color: #FFD21F;
+        color:#F5F5F5;
+        font-size:1.35rem;
+        font-weight:750;
+        letter-spacing:-.04em;
     }
-
+    .brand-main .yellow, .page-kicker {
+        color:#FFD21F;
+    }
     .brand-subtitle {
-        color: #777777;
-        font-size: 0.68rem;
-        font-weight: 600;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        margin-top: 0.38rem;
-        white-space: nowrap;
+        color:#777;
+        font-size:.68rem;
+        font-weight:600;
+        letter-spacing:.14em;
+        text-transform:uppercase;
+        margin-top:.35rem;
     }
-
-
-    /* ======================================================
-       NAVIGATION
-       ====================================================== */
-
-    .nav-wrapper {
-        padding-top: 0.05rem;
-    }
-
-    /* Keep the actual Streamlit radio interactive */
     div[role="radiogroup"] {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        gap: 0.35rem !important;
-        justify-content: center !important;
-        align-items: center !important;
-        background: transparent !important;
+        display:flex !important;
+        flex-wrap:wrap !important;
+        gap:.35rem !important;
+        justify-content:center !important;
     }
-
     div[role="radiogroup"] > label {
-        display: flex !important;
-        align-items: center !important;
-        background: #111111 !important;
-        border: 1px solid #292929 !important;
-        border-radius: 8px !important;
-        padding: 0.38rem 0.82rem !important;
-        min-height: 34px !important;
-        cursor: pointer !important;
-        transition: none !important;
+        background:#111 !important;
+        border:1px solid #292929 !important;
+        border-radius:8px !important;
+        padding:.38rem .82rem !important;
+        min-height:34px;
+        cursor:pointer !important;
     }
-
-    div[role="radiogroup"] > label:hover {
-        border-color: #FFD21F !important;
-        background: #171717 !important;
-    }
-
-    /*
-       Hide only the radio circle, NOT the clickable label.
-       The label itself remains the interactive control.
-    */
     div[role="radiogroup"] > label input[type="radio"] {
-        position: absolute !important;
-        opacity: 0 !important;
-        width: 1px !important;
-        height: 1px !important;
-        pointer-events: none !important;
+        position:absolute !important;
+        opacity:0 !important;
+        width:1px !important;
+        height:1px !important;
+        pointer-events:none !important;
     }
-
     div[role="radiogroup"] > label:has(input[type="radio"]:checked) {
-        background: #FFD21F !important;
-        border-color: #FFD21F !important;
+        background:#FFD21F !important;
+        border-color:#FFD21F !important;
     }
-
     div[role="radiogroup"] > label:has(input[type="radio"]:checked) p {
-        color: #080808 !important;
-        font-weight: 750 !important;
+        color:#080808 !important;
+        font-weight:750 !important;
     }
-
     div[role="radiogroup"] > label p {
-        color: #BDBDBD !important;
-        font-size: 0.82rem !important;
-        font-weight: 600 !important;
-        margin: 0 !important;
-        white-space: nowrap !important;
+        color:#BDBDBD !important;
+        font-size:.82rem !important;
+        font-weight:600 !important;
+        margin:0 !important;
+        white-space:nowrap !important;
     }
-
-
-    /* ======================================================
-       DIVIDERS
-       ====================================================== */
-
     .section-divider {
-        height: 1px;
-        background: #292929;
-        margin: 1rem 0 1.25rem 0;
+        height:1px;
+        background:#292929;
+        margin:1rem 0 1.25rem;
     }
-
-
-    /* ======================================================
-       PAGE HEADINGS
-       ====================================================== */
-
     .page-kicker {
-        color: #FFD21F;
-        font-size: 0.69rem;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        margin-bottom: 0.18rem;
+        font-size:.69rem;
+        font-weight:700;
+        letter-spacing:.12em;
+        text-transform:uppercase;
+        margin-bottom:.18rem;
     }
-
     .page-title {
-        color: #F5F5F5;
-        font-size: 1.5rem;
-        font-weight: 750;
-        letter-spacing: -0.03em;
-        margin-bottom: 0.2rem;
+        color:#F5F5F5;
+        font-size:1.5rem;
+        font-weight:750;
+        letter-spacing:-.03em;
+        margin-bottom:.2rem;
     }
-
     .page-description {
-        color: #858585;
-        font-size: 0.84rem;
-        margin-bottom: 1rem;
+        color:#858585;
+        font-size:.84rem;
+        margin-bottom:1rem;
     }
-
-
-    /* ======================================================
-       FILTERS
-       ====================================================== */
-
-    .filter-label {
-        color: #858585;
-        font-size: 0.69rem;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        margin-bottom: 0.25rem;
+    .filter-label, .kpi-label, .insight-label {
+        color:#858585;
+        font-size:.69rem;
+        font-weight:700;
+        letter-spacing:.08em;
+        text-transform:uppercase;
     }
-
     div[data-baseweb="select"] > div {
-        background-color: #111111 !important;
-        border-color: #292929 !important;
+        background:#111 !important;
+        border-color:#292929 !important;
     }
-
     div[data-baseweb="select"] span {
-        color: #F5F5F5 !important;
+        color:#F5F5F5 !important;
     }
-
-    div[data-baseweb="select"] svg {
-        fill: #888888 !important;
-    }
-
     [data-testid="stDateInput"] input {
-        color: #F5F5F5 !important;
-        background-color: #111111 !important;
-        border-color: #292929 !important;
+        color:#F5F5F5 !important;
+        background:#111 !important;
+        border-color:#292929 !important;
     }
-
-
-    /* ======================================================
-       KPI CARDS
-       ====================================================== */
-
+    .kpi-card, .insight-card, .empty-state {
+        background:#111;
+        border:1px solid #292929;
+        border-radius:10px;
+    }
     .kpi-card {
-        background: #111111;
-        border: 1px solid #292929;
-        border-radius: 10px;
-        padding: 1rem;
-        min-height: 108px;
+        padding:1rem;
+        min-height:108px;
     }
-
-    .kpi-label {
-        color: #858585;
-        font-size: 0.69rem;
-        font-weight: 650;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-    }
-
     .kpi-value {
-        color: #F5F5F5;
-        font-size: 1.5rem;
-        font-weight: 750;
-        letter-spacing: -0.035em;
-        margin-top: 0.35rem;
+        color:#F5F5F5;
+        font-size:1.5rem;
+        font-weight:750;
+        margin-top:.35rem;
     }
-
-    .kpi-value.accent {
-        color: #FFD21F;
-    }
-
+    .kpi-value.accent { color:#FFD21F; }
     .kpi-caption {
-        color: #666666;
-        font-size: 0.7rem;
-        margin-top: 0.25rem;
+        color:#666;
+        font-size:.7rem;
+        margin-top:.25rem;
     }
-
-
-    /* ======================================================
-       INSIGHTS
-       ====================================================== */
-
     .insight-card {
-        background: #111111;
-        border: 1px solid #292929;
-        border-radius: 10px;
-        padding: 0.9rem 1rem;
-        min-height: 85px;
+        padding:.9rem 1rem;
+        min-height:85px;
     }
-
-    .insight-label {
-        color: #858585;
-        font-size: 0.68rem;
-        font-weight: 650;
-        letter-spacing: 0.07em;
-        text-transform: uppercase;
-    }
-
     .insight-value {
-        color: #F5F5F5;
-        font-size: 1rem;
-        font-weight: 700;
-        margin-top: 0.35rem;
+        color:#F5F5F5;
+        font-size:1rem;
+        font-weight:700;
+        margin-top:.35rem;
     }
-
-
-    /* ======================================================
-       CHARTS
-       ====================================================== */
-
     .chart-title {
-        color: #F5F5F5;
-        font-size: 0.94rem;
-        font-weight: 680;
-        margin-bottom: 0.2rem;
+        color:#F5F5F5;
+        font-size:.94rem;
+        font-weight:680;
+        margin-bottom:.2rem;
     }
-
-    .stPlotlyChart {
-        background: #111111;
-        border-radius: 8px;
-    }
-
-
-    /* ======================================================
-       EMPTY STATE
-       ====================================================== */
-
     .empty-state {
-        background: #111111;
-        border: 1px solid #292929;
-        border-radius: 10px;
-        padding: 1.35rem;
-        color: #858585;
-        text-align: center;
-        margin: 0.4rem 0 1rem 0;
+        padding:1.35rem;
+        color:#858585;
+        text-align:center;
+        margin:.4rem 0 1rem;
     }
-
-
-    /* ======================================================
-       DATAFRAME
-       ====================================================== */
-
     [data-testid="stDataFrame"] {
-        border: 1px solid #292929;
-        border-radius: 8px;
-        overflow: hidden;
+        border:1px solid #292929;
+        border-radius:8px;
+        overflow:hidden;
     }
-
     </style>
     """,
     unsafe_allow_html=True,
@@ -392,191 +205,124 @@ st.markdown(
 
 
 # ============================================================
-# 4. DATA LOADING
+# DATA
 # ============================================================
 
 @st.cache_data(show_spinner=False)
 def load_data(file_path: str) -> pd.DataFrame:
-    df = pd.read_csv(file_path)
+    data = pd.read_csv(file_path)
 
-    for column in EXPECTED_COLUMNS:
-        if column not in df.columns:
-            df[column] = pd.NA
+    for col in EXPECTED_COLUMNS:
+        if col not in data.columns:
+            data[col] = pd.NA
 
-    df = df[EXPECTED_COLUMNS].copy()
+    data = data[EXPECTED_COLUMNS].copy()
 
-    # Date
-    df["date"] = pd.to_datetime(
-        df["date"],
-        errors="coerce",
-    )
+    data["date"] = pd.to_datetime(data["date"], errors="coerce")
 
-    # Time
-    time_text = (
-        df["time"]
-        .astype("string")
-        .str.strip()
-    )
+    time_text = data["time"].astype("string").str.strip()
+    parsed_time = pd.to_datetime(time_text, errors="coerce")
+    numeric_time = pd.to_numeric(time_text, errors="coerce")
 
-    parsed_time = pd.to_datetime(
-        time_text,
-        errors="coerce",
-    )
-
-    numeric_time = pd.to_numeric(
-        time_text,
-        errors="coerce",
-    )
-
-    df["_hour"] = parsed_time.dt.hour
-
-    df["_hour"] = df["_hour"].fillna(
-        numeric_time.where(
-            numeric_time.between(0, 23),
-            np.nan,
-        )
+    data["_hour"] = parsed_time.dt.hour
+    data["_hour"] = data["_hour"].fillna(
+        numeric_time.where(numeric_time.between(0, 23), np.nan)
     )
 
     extracted_hour = pd.to_numeric(
-        time_text.str.extract(
-            r"^(\d{1,2})(?::\d{1,2})?",
-            expand=False,
-        ),
+        time_text.str.extract(r"^(\d{1,2})(?::\d{1,2})?", expand=False),
         errors="coerce",
     )
-
-    df["_hour"] = df["_hour"].fillna(extracted_hour)
-
-    df["_hour"] = pd.to_numeric(
-        df["_hour"],
-        errors="coerce",
+    data["_hour"] = pd.to_numeric(
+        data["_hour"].fillna(extracted_hour), errors="coerce"
     )
 
-    # Numeric fields
-    for column in NUMERIC_COLUMNS:
-        df[column] = pd.to_numeric(
-            df[column],
-            errors="coerce",
-        )
+    for col in NUMERIC_COLUMNS:
+        data[col] = pd.to_numeric(data[col], errors="coerce")
 
-    # Text fields
     text_columns = [
-        "services",
-        "ride_status",
-        "source",
-        "destination",
-        "ride_id",
-        "payment_method",
+        "services", "ride_status", "source", "destination",
+        "ride_id", "payment_method"
     ]
+    for col in text_columns:
+        data[col] = data[col].astype("string").str.strip()
 
-    for column in text_columns:
-        df[column] = (
-            df[column]
-            .astype("string")
-            .str.strip()
-        )
-
-    # Status helpers
     status = (
-        df["ride_status"]
+        data["ride_status"]
         .fillna("")
         .astype("string")
         .str.strip()
         .str.lower()
     )
 
-    df["_is_completed"] = status.eq("completed")
-    df["_is_cancelled"] = status.eq("cancelled")
+    data["_is_completed"] = status.eq("completed")
+    data["_is_cancelled"] = status.eq("cancelled")
 
-    df["_status_clean"] = (
-        df["ride_status"]
-        .fillna("Unknown")
-        .astype("string")
-        .str.strip()
+    data["_status_clean"] = (
+        data["ride_status"].fillna("Unknown").astype("string").str.strip()
     )
+    data.loc[data["_status_clean"].eq(""), "_status_clean"] = "Unknown"
 
-    df.loc[
-        df["_status_clean"].eq(""),
-        "_status_clean",
-    ] = "Unknown"
+    return data
 
-    return df
+
+if not CSV_PATH.exists():
+    st.error(
+        "rides_data.csv was not found. Put rides_data.csv in the same "
+        "folder as rapido_ride_intelligence.py."
+    )
+    st.stop()
+
+try:
+    df = load_data(str(CSV_PATH))
+except Exception as exc:
+    st.error(f"Unable to load rides_data.csv: {exc}")
+    st.stop()
 
 
 # ============================================================
-# 5. HELPER FUNCTIONS
+# HELPERS
 # ============================================================
 
-def format_number(value) -> str:
+def format_number(value):
     if value is None or pd.isna(value):
         return "0"
-
     try:
         value = float(value)
     except Exception:
         return "0"
-
-    if value.is_integer():
-        return f"{int(value):,}"
-
-    return f"{value:,.2f}"
+    return f"{int(value):,}" if value.is_integer() else f"{value:,.2f}"
 
 
-def format_currency(value) -> str:
+def format_currency(value):
     if value is None or pd.isna(value):
         return "₹0"
-
     try:
         value = float(value)
     except Exception:
         return "₹0"
-
-    if value.is_integer():
-        return f"₹{int(value):,}"
-
-    return f"₹{value:,.2f}"
+    return f"₹{int(value):,}" if value.is_integer() else f"₹{value:,.2f}"
 
 
-def safe_pct(numerator, denominator) -> float:
-    if denominator is None or denominator == 0:
+def safe_pct(num, den):
+    if den is None or den == 0 or num is None or pd.isna(num):
         return 0.0
-
-    if numerator is None or pd.isna(numerator):
-        return 0.0
-
-    return float(numerator) / float(denominator) * 100
+    return float(num) / float(den) * 100
 
 
-def available_values(series) -> list:
-    values = (
-        series
-        .dropna()
-        .astype(str)
-        .str.strip()
-    )
-
+def available_values(series):
+    values = series.dropna().astype(str).str.strip()
     values = values[values != ""]
-
-    return sorted(
-        values.unique().tolist(),
-        key=str.lower,
-    )
+    return sorted(values.unique().tolist(), key=str.lower)
 
 
 def completed_only(data):
-    if data.empty:
-        return data.copy()
-
     return data[data["_is_completed"]].copy()
 
 
 def show_empty():
     st.markdown(
-        """
-        <div class="empty-state">
-            No data available for the selected filters.
-        </div>
-        """,
+        '<div class="empty-state">No data available for the selected filters.</div>',
         unsafe_allow_html=True,
     )
 
@@ -593,95 +339,17 @@ def page_header(kicker, title, description):
 
 
 def chart_title(title):
-    st.markdown(
-        f'<div class="chart-title">{title}</div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown(f'<div class="chart-title">{title}</div>', unsafe_allow_html=True)
 
 
-def apply_theme(fig, height=340):
-    fig.update_layout(
-        paper_bgcolor="#111111",
-        plot_bgcolor="#111111",
-        font=dict(
-            family="Inter, Arial, sans-serif",
-            color="#D7D7D7",
-            size=12,
-        ),
-        height=height,
-        margin=dict(
-            l=45,
-            r=25,
-            t=20,
-            b=45,
-        ),
-        hoverlabel=dict(
-            bgcolor="#181818",
-            bordercolor="#292929",
-            font_color="#F5F5F5",
-        ),
-        legend=dict(
-            bgcolor="rgba(0,0,0,0)",
-            font=dict(
-                color="#BDBDBD",
-            ),
-        ),
-    )
-
-    fig.update_xaxes(
-        showgrid=True,
-        gridcolor="#242424",
-        zeroline=False,
-        linecolor="#292929",
-        tickfont=dict(
-            color="#8A8A8A",
-        ),
-        title_font=dict(
-            color="#8A8A8A",
-        ),
-    )
-
-    fig.update_yaxes(
-        showgrid=True,
-        gridcolor="#242424",
-        zeroline=False,
-        linecolor="#292929",
-        tickfont=dict(
-            color="#8A8A8A",
-        ),
-        title_font=dict(
-            color="#8A8A8A",
-        ),
-    )
-
-    return fig
-
-
-def show_chart(fig, key):
-    st.plotly_chart(
-        fig,
-        use_container_width=True,
-        config={
-            "displayModeBar": False,
-            "responsive": True,
-        },
-        key=key,
-    )
-
-
-def kpi_card(column, label, value, caption="", accent=False):
-    with column:
-        css_class = (
-            "kpi-value accent"
-            if accent
-            else "kpi-value"
-        )
-
+def kpi_card(col, label, value, caption="", accent=False):
+    with col:
+        cls = "kpi-value accent" if accent else "kpi-value"
         st.markdown(
             f"""
             <div class="kpi-card">
                 <div class="kpi-label">{label}</div>
-                <div class="{css_class}">{value}</div>
+                <div class="{cls}">{value}</div>
                 <div class="kpi-caption">{caption}</div>
             </div>
             """,
@@ -689,8 +357,8 @@ def kpi_card(column, label, value, caption="", accent=False):
         )
 
 
-def insight_card(column, label, value):
-    with column:
+def insight_card(col, label, value):
+    with col:
         st.markdown(
             f"""
             <div class="insight-card">
@@ -702,155 +370,85 @@ def insight_card(column, label, value):
         )
 
 
+def apply_theme(fig, height=340):
+    fig.update_layout(
+        paper_bgcolor="#111111",
+        plot_bgcolor="#111111",
+        font=dict(family="Inter, Arial, sans-serif", color="#D7D7D7", size=12),
+        height=height,
+        margin=dict(l=45, r=25, t=20, b=45),
+        hoverlabel=dict(bgcolor="#181818", bordercolor="#292929", font_color="#F5F5F5"),
+        legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(color="#BDBDBD")),
+    )
+    fig.update_xaxes(
+        showgrid=True, gridcolor="#242424", zeroline=False, linecolor="#292929",
+        tickfont=dict(color="#8A8A8A"), title_font=dict(color="#8A8A8A")
+    )
+    fig.update_yaxes(
+        showgrid=True, gridcolor="#242424", zeroline=False, linecolor="#292929",
+        tickfont=dict(color="#8A8A8A"), title_font=dict(color="#8A8A8A")
+    )
+    return fig
+
+
+def show_chart(fig, key):
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+        config={"displayModeBar": False, "responsive": True},
+        key=key,
+    )
+
+
 def hourly_data(data):
-    if data.empty:
-        return pd.DataFrame(
-            columns=["hour", "rides"]
-        )
-
-    temp = data.dropna(
-        subset=["_hour"]
-    ).copy()
-
+    temp = data.dropna(subset=["_hour"]).copy()
     if temp.empty:
-        return pd.DataFrame(
-            columns=["hour", "rides"]
-        )
-
-    temp["hour"] = (
-        pd.to_numeric(
-            temp["_hour"],
-            errors="coerce",
-        )
-        .round()
-        .astype(int)
-        .clip(0, 23)
-    )
-
-    return (
-        temp.groupby(
-            "hour",
-            as_index=False,
-        )
-        .size()
-        .rename(
-            columns={"size": "rides"}
-        )
-    )
+        return pd.DataFrame(columns=["hour", "rides"])
+    temp["hour"] = pd.to_numeric(temp["_hour"], errors="coerce").round().astype(int).clip(0, 23)
+    return temp.groupby("hour", as_index=False).size().rename(columns={"size": "rides"})
 
 
 def daily_data(data):
-    if data.empty:
-        return pd.DataFrame(
-            columns=["date", "rides"]
-        )
-
-    temp = data.dropna(
-        subset=["date"]
-    ).copy()
-
+    temp = data.dropna(subset=["date"]).copy()
     if temp.empty:
-        return pd.DataFrame(
-            columns=["date", "rides"]
-        )
-
+        return pd.DataFrame(columns=["date", "rides"])
     return (
-        temp.groupby(
-            "date",
-            as_index=False,
-        )
-        .size()
-        .rename(
-            columns={"size": "rides"}
-        )
+        temp.groupby("date", as_index=False).size()
+        .rename(columns={"size": "rides"})
         .sort_values("date")
     )
 
 
 def daily_revenue(data):
-    temp = completed_only(data)
-
+    temp = completed_only(data).dropna(subset=["date", "total_fare"])
     if temp.empty:
-        return pd.DataFrame(
-            columns=["date", "revenue"]
-        )
-
-    temp = temp.dropna(
-        subset=["date", "total_fare"]
-    )
-
-    if temp.empty:
-        return pd.DataFrame(
-            columns=["date", "revenue"]
-        )
-
+        return pd.DataFrame(columns=["date", "revenue"])
     return (
-        temp.groupby(
-            "date",
-            as_index=False,
-        )["total_fare"]
+        temp.groupby("date", as_index=False)["total_fare"]
         .sum()
-        .rename(
-            columns={
-                "total_fare": "revenue"
-            }
-        )
+        .rename(columns={"total_fare": "revenue"})
         .sort_values("date")
     )
 
 
 # ============================================================
-# 6. LOAD DATA
+# HEADER + NAVIGATION
 # ============================================================
 
-if not CSV_PATH.exists():
-    st.error(
-        "rides_data.csv was not found. "
-        "Place rides_data.csv in the same folder as "
-        "rapido_ride_intelligence.py."
-    )
-    st.stop()
+brand, nav_col = st.columns([1.5, 5.5], vertical_alignment="center")
 
-try:
-    df = load_data(str(CSV_PATH))
-except Exception as exc:
-    st.error(f"Unable to load rides_data.csv: {exc}")
-    st.stop()
-
-
-# ============================================================
-# 7. HEADER
-# ============================================================
-
-# IMPORTANT:
-# JJ Analyst / Analytics has been completely removed.
-# The header now has only branding + navigation.
-
-header_brand, header_nav = st.columns(
-    [1.5, 4.5],
-    vertical_alignment="center",
-)
-
-
-with header_brand:
+with brand:
     st.markdown(
         """
-        <div class="brand-block">
-            <div class="brand-main">
-                <span class="yellow">Rapido</span>
-                Ride Intelligence
-            </div>
-            <div class="brand-subtitle">
-                Mobility Analytics
-            </div>
+        <div>
+            <div class="brand-main"><span class="yellow">Rapido</span> Ride Intelligence</div>
+            <div class="brand-subtitle">Mobility Analytics</div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-with header_nav:
-    # Real Streamlit navigation.
-    # No static HTML navigation is used.
+with nav_col:
     nav = st.radio(
         "Navigation",
         [
@@ -860,69 +458,41 @@ with header_nav:
             "Operations",
             "Locations",
             "Data Quality",
+            "Ride Explorer",
         ],
         horizontal=True,
         label_visibility="collapsed",
         key="dashboard_navigation",
     )
 
-
-st.markdown(
-    '<div class="section-divider"></div>',
-    unsafe_allow_html=True,
-)
+st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
 
 
 # ============================================================
-# 8. GLOBAL FILTERS
+# GLOBAL FILTERS
 # ============================================================
 
-st.markdown(
-    '<div class="filter-label">Global Filters</div>',
-    unsafe_allow_html=True,
-)
+st.markdown('<div class="filter-label">Global Filters</div>', unsafe_allow_html=True)
 
-filter1, filter2, filter3, filter4 = st.columns(
-    [1.2, 1.2, 1.2, 1.5],
-    gap="medium",
-)
+f1, f2, f3, f4 = st.columns([1.2, 1.2, 1.2, 1.5], gap="medium")
 
-services = available_values(
-    df["services"]
-)
+services = available_values(df["services"])
+statuses = available_values(df["ride_status"])
+payments = available_values(df["payment_method"])
 
-statuses = available_values(
-    df["ride_status"]
-)
+payment_options = ["All Payment Methods"] + payments
 
-payments = available_values(
-    df["payment_method"]
-)
-
-# "All Payment Methods" is intentionally included.
-# Cancelled rides have missing payment methods, so the
-# default option must not remove them from the dataset.
-payment_options = [
-    "All Payment Methods"
-] + payments
-
-with filter1:
+with f1:
     selected_services = st.multiselect(
-        "Service",
-        services,
-        default=services,
-        key="services_filter",
+        "Service", services, default=services, key="services_filter"
     )
 
-with filter2:
+with f2:
     selected_statuses = st.multiselect(
-        "Ride Status",
-        statuses,
-        default=statuses,
-        key="status_filter",
+        "Ride Status", statuses, default=statuses, key="status_filter"
     )
 
-with filter3:
+with f3:
     selected_payments = st.multiselect(
         "Payment Method",
         payment_options,
@@ -930,16 +500,14 @@ with filter3:
         key="payment_filter",
     )
 
-with filter4:
+with f4:
     valid_dates = df["date"].dropna()
-
     if valid_dates.empty:
         selected_period = None
         st.caption("No valid dates found.")
     else:
         min_date = valid_dates.min().date()
         max_date = valid_dates.max().date()
-
         selected_period = st.date_input(
             "Analysis Period",
             value=(min_date, max_date),
@@ -950,246 +518,78 @@ with filter4:
 
 
 # ============================================================
-# 9. APPLY FILTERS
+# APPLY FILTERS — SINGLE SOURCE OF TRUTH
 # ============================================================
 
 filtered = df.copy()
 
-# ------------------------------------------------------------
-# Service filter
-# ------------------------------------------------------------
-
 if selected_services:
-    filtered = filtered[
-        filtered["services"]
-        .astype(str)
-        .isin(selected_services)
-    ]
+    filtered = filtered[filtered["services"].astype(str).isin(selected_services)]
 else:
     filtered = filtered.iloc[0:0]
-
-
-# ------------------------------------------------------------
-# Ride status filter
-# ------------------------------------------------------------
 
 if selected_statuses:
-    filtered = filtered[
-        filtered["ride_status"]
-        .astype(str)
-        .isin(selected_statuses)
-    ]
+    filtered = filtered[filtered["ride_status"].astype(str).isin(selected_statuses)]
 else:
     filtered = filtered.iloc[0:0]
 
-
-# ------------------------------------------------------------
-# Payment method filter
-# ------------------------------------------------------------
-
 # IMPORTANT:
-# "All Payment Methods" means no payment-method filtering.
-# This preserves cancelled rides whose payment_method is blank.
-
-if (
-    selected_payments
-    and "All Payment Methods" not in selected_payments
-):
+# "All Payment Methods" deliberately means NO payment filter.
+# This preserves cancelled rides whose payment method is blank.
+if selected_payments and "All Payment Methods" not in selected_payments:
     filtered = filtered[
-        filtered["payment_method"]
-        .astype(str)
-        .isin(selected_payments)
+        filtered["payment_method"].astype(str).isin(selected_payments)
     ]
-
 elif not selected_payments:
     filtered = filtered.iloc[0:0]
 
-
-# ------------------------------------------------------------
-# Date filter
-# ------------------------------------------------------------
-
 if selected_period is not None and not filtered.empty:
-
-    if (
-        isinstance(selected_period, tuple)
-        and len(selected_period) == 2
-    ):
+    if isinstance(selected_period, tuple) and len(selected_period) == 2:
         start_date, end_date = selected_period
-
         filtered = filtered[
             filtered["date"].notna()
-            & filtered["date"].dt.date.between(
-                start_date,
-                end_date,
-            )
+            & filtered["date"].dt.date.between(start_date, end_date)
         ]
-
-    elif hasattr(selected_period, "year"):
-
-        filtered = filtered[
-            filtered["date"].notna()
-            & filtered["date"].dt.date.eq(
-                selected_period
-            )
-        ]
-# ============================================================
-# 9. APPLY FILTERS
-# ============================================================
-
-filtered = df.copy()
-
-if selected_services:
-    filtered = filtered[
-        filtered["services"]
-        .astype(str)
-        .isin(selected_services)
-    ]
-else:
-    filtered = filtered.iloc[0:0]
-
-if selected_statuses:
-    filtered = filtered[
-        filtered["ride_status"]
-        .astype(str)
-        .isin(selected_statuses)
-    ]
-else:
-    filtered = filtered.iloc[0:0]
-
-if selected_payments:
-    filtered = filtered[
-        filtered["payment_method"]
-        .astype(str)
-        .isin(selected_payments)
-    ]
-else:
-    filtered = filtered.iloc[0:0]
-
-if selected_period is not None and not filtered.empty:
-
-    if (
-        isinstance(selected_period, tuple)
-        and len(selected_period) == 2
-    ):
-        start_date, end_date = selected_period
-
-        filtered = filtered[
-            filtered["date"].notna()
-            & filtered["date"].dt.date.between(
-                start_date,
-                end_date,
-            )
-        ]
-
     elif hasattr(selected_period, "year"):
         filtered = filtered[
             filtered["date"].notna()
-            & filtered["date"].dt.date.eq(
-                selected_period
-            )
+            & filtered["date"].dt.date.eq(selected_period)
         ]
 
 
 # ============================================================
-# 10. KPI CALCULATIONS
+# GLOBAL KPIs
 # ============================================================
 
 total_rides = len(filtered)
-
 completed = completed_only(filtered)
+cancelled = filtered[filtered["_is_cancelled"]]
 
-cancelled = filtered[
-    filtered["_is_cancelled"]
-].copy()
+total_revenue = completed["total_fare"].sum(min_count=1) if not completed.empty else 0
+total_revenue = 0 if pd.isna(total_revenue) else total_revenue
 
-total_revenue = (
-    completed["total_fare"]
-    .sum(min_count=1)
-    if not completed.empty
-    else 0
-)
-
-if pd.isna(total_revenue):
-    total_revenue = 0
-
-completion_rate = safe_pct(
-    len(completed),
-    total_rides,
-)
-
+completion_rate = safe_pct(len(completed), total_rides)
 cancellation_count = len(cancelled)
+cancellation_rate = safe_pct(cancellation_count, total_rides)
 
-average_fare = (
-    completed["total_fare"]
-    .dropna()
-    .mean()
-    if not completed.empty
-    else 0
-)
+average_fare = completed["total_fare"].dropna().mean() if not completed.empty else 0
+average_fare = 0 if pd.isna(average_fare) else average_fare
 
-if pd.isna(average_fare):
-    average_fare = 0
+kpis = st.columns(5, gap="medium")
+kpi_card(kpis[0], "Total Rides", format_number(total_rides), "Filtered rides")
+kpi_card(kpis[1], "Total Revenue", format_currency(total_revenue), "Completed rides only", True)
+kpi_card(kpis[2], "Completion Rate", f"{completion_rate:.1f}%", "Completed / total rides")
+kpi_card(kpis[3], "Cancellations", format_number(cancellation_count), "Filtered cancelled rides")
+kpi_card(kpis[4], "Average Fare", format_currency(average_fare), "Completed rides only")
 
-
-# ============================================================
-# 11. KPI CARDS
-# ============================================================
-
-kpis = st.columns(
-    5,
-    gap="medium",
-)
-
-kpi_card(
-    kpis[0],
-    "Total Rides",
-    format_number(total_rides),
-    "Filtered rides",
-)
-
-kpi_card(
-    kpis[1],
-    "Total Revenue",
-    format_currency(total_revenue),
-    "Completed rides only",
-    accent=True,
-)
-
-kpi_card(
-    kpis[2],
-    "Completion Rate",
-    f"{completion_rate:.1f}%",
-    "Completed / total rides",
-)
-
-kpi_card(
-    kpis[3],
-    "Cancellations",
-    format_number(cancellation_count),
-    "Filtered cancelled rides",
-)
-
-kpi_card(
-    kpis[4],
-    "Average Fare",
-    format_currency(average_fare),
-    "Completed rides only",
-)
-
-
-st.markdown(
-    "<div style='height:0.8rem'></div>",
-    unsafe_allow_html=True,
-)
+st.markdown("<div style='height:.8rem'></div>", unsafe_allow_html=True)
 
 
 # ============================================================
-# 12. OVERVIEW
+# OVERVIEW
 # ============================================================
 
 if nav == "Overview":
-
     page_header(
         "Executive Overview",
         "Ride Intelligence Overview",
@@ -1198,351 +598,99 @@ if nav == "Overview":
 
     if filtered.empty:
         show_empty()
-
     else:
+        c1, c2 = st.columns([1.5, 1], gap="medium")
 
-        # ------------------------------
-        # Demand by Hour
-        # ------------------------------
-
-        col1, col2 = st.columns(
-            [1.5, 1],
-            gap="medium",
-        )
-
-        with col1:
-
-            chart_title(
-                "Ride Demand by Hour"
-            )
-
-            hourly = hourly_data(
-                filtered
-            )
-
+        with c1:
+            chart_title("Ride Demand by Hour")
+            hourly = hourly_data(filtered)
             if hourly.empty:
                 show_empty()
-
             else:
-
-                fig = px.line(
-                    hourly,
-                    x="hour",
-                    y="rides",
-                    markers=True,
-                )
-
+                fig = px.line(hourly, x="hour", y="rides", markers=True)
                 fig.update_traces(
-                    line=dict(
-                        color="#FFD21F",
-                        width=3,
-                    ),
-                    marker=dict(
-                        color="#FFD21F",
-                        size=7,
-                    ),
-                    hovertemplate=(
-                        "Hour: %{x}:00"
-                        "<br>Rides: %{y}"
-                        "<extra></extra>"
-                    ),
+                    line=dict(color="#FFD21F", width=3),
+                    marker=dict(color="#FFD21F", size=7),
+                    hovertemplate="Hour: %{x}:00<br>Rides: %{y}<extra></extra>",
                 )
-
                 fig.update_layout(
-                    xaxis_title="Hour",
-                    yaxis_title="Ride Count",
-                    xaxis=dict(
-                        tickmode="linear",
-                        tick0=0,
-                        dtick=2,
-                    ),
+                    xaxis_title="Hour", yaxis_title="Ride Count",
+                    xaxis=dict(tickmode="linear", tick0=0, dtick=2),
                 )
+                show_chart(apply_theme(fig), "overview_hour")
 
-                show_chart(
-                    apply_theme(fig),
-                    "overview_hour",
-                )
+        with c2:
+            chart_title("Ride Outcome Mix")
+            outcome = filtered["_status_clean"].value_counts().reset_index()
+            outcome.columns = ["status", "rides"]
+            colors = []
+            for status in outcome["status"]:
+                s = str(status).lower()
+                colors.append("#FFD21F" if s == "completed" else "#444444" if s == "cancelled" else "#777777")
+            fig = go.Figure(data=[go.Pie(
+                labels=outcome["status"], values=outcome["rides"], hole=.62,
+                marker=dict(colors=colors, line=dict(color="#111111", width=2)),
+                textinfo="percent",
+                hovertemplate="%{label}<br>Rides: %{value}<br>%{percent}<extra></extra>",
+            )])
+            fig.update_layout(annotations=[dict(
+                text=f"<b>{format_number(total_rides)}</b><br>Rides",
+                x=.5, y=.5, showarrow=False,
+                font=dict(color="#F5F5F5", size=15)
+            )])
+            show_chart(apply_theme(fig), "overview_outcome")
 
-        # ------------------------------
-        # Outcome Mix
-        # ------------------------------
+        c3, c4 = st.columns([1, 1.5], gap="medium")
 
-        with col2:
-
-            chart_title(
-                "Ride Outcome Mix"
-            )
-
-            outcome = (
-                filtered["_status_clean"]
-                .value_counts()
-                .reset_index()
-            )
-
-            outcome.columns = [
-                "status",
-                "rides",
-            ]
-
-            if outcome.empty:
-                show_empty()
-
-            else:
-
-                colors = []
-
-                for status in outcome["status"]:
-                    if str(status).lower() == "completed":
-                        colors.append("#FFD21F")
-                    elif str(status).lower() == "cancelled":
-                        colors.append("#444444")
-                    else:
-                        colors.append("#777777")
-
-                fig = go.Figure(
-                    data=[
-                        go.Pie(
-                            labels=outcome["status"],
-                            values=outcome["rides"],
-                            hole=0.62,
-                            marker=dict(
-                                colors=colors,
-                                line=dict(
-                                    color="#111111",
-                                    width=2,
-                                ),
-                            ),
-                            textinfo="percent",
-                            hovertemplate=(
-                                "%{label}"
-                                "<br>Rides: %{value}"
-                                "<br>%{percent}"
-                                "<extra></extra>"
-                            ),
-                        )
-                    ]
-                )
-
-                fig.update_layout(
-                    annotations=[
-                        dict(
-                            text=(
-                                f"<b>{format_number(total_rides)}</b>"
-                                "<br>Rides"
-                            ),
-                            x=0.5,
-                            y=0.5,
-                            showarrow=False,
-                            font=dict(
-                                color="#F5F5F5",
-                                size=15,
-                            ),
-                        )
-                    ]
-                )
-
-                show_chart(
-                    apply_theme(fig),
-                    "overview_outcome",
-                )
-
-
-        # ------------------------------
-        # Service Volume
-        # ------------------------------
-
-        col3, col4 = st.columns(
-            [1, 1.5],
-            gap="medium",
-        )
-
-        with col3:
-
-            chart_title(
-                "Service Volume"
-            )
-
+        with c3:
+            chart_title("Service Volume")
             service_volume = (
-                filtered.assign(
-                    service=filtered[
-                        "services"
-                    ].fillna("Unknown")
-                )
-                .groupby(
-                    "service",
-                    as_index=False,
-                )
-                .size()
-                .rename(
-                    columns={
-                        "size": "rides"
-                    }
-                )
-                .sort_values(
-                    "rides",
-                    ascending=True,
-                )
+                filtered.assign(service=filtered["services"].fillna("Unknown"))
+                .groupby("service", as_index=False).size()
+                .rename(columns={"size": "rides"})
+                .sort_values("rides", ascending=True)
             )
+            fig = px.bar(service_volume, x="rides", y="service", orientation="h")
+            fig.update_traces(marker_color="#FFD21F")
+            fig.update_layout(xaxis_title="Ride Count", yaxis_title="")
+            show_chart(apply_theme(fig), "overview_service")
 
-            if service_volume.empty:
-                show_empty()
-
-            else:
-
-                fig = px.bar(
-                    service_volume,
-                    x="rides",
-                    y="service",
-                    orientation="h",
-                )
-
-                fig.update_traces(
-                    marker_color="#FFD21F",
-                    hovertemplate=(
-                        "Service: %{y}"
-                        "<br>Rides: %{x}"
-                        "<extra></extra>"
-                    ),
-                )
-
-                fig.update_layout(
-                    xaxis_title="Ride Count",
-                    yaxis_title="",
-                )
-
-                show_chart(
-                    apply_theme(fig),
-                    "overview_service",
-                )
-
-        # ------------------------------
-        # Daily Trend
-        # ------------------------------
-
-        with col4:
-
-            chart_title(
-                "Daily Ride Trend"
-            )
-
-            daily = daily_data(
-                filtered
-            )
-
+        with c4:
+            chart_title("Daily Ride Trend")
+            daily = daily_data(filtered)
             if daily.empty:
                 show_empty()
-
             else:
-
-                fig = px.area(
-                    daily,
-                    x="date",
-                    y="rides",
-                )
-
+                fig = px.area(daily, x="date", y="rides")
                 fig.update_traces(
-                    line=dict(
-                        color="#FFD21F",
-                        width=2.5,
-                    ),
-                    fillcolor=(
-                        "rgba(255,210,31,0.10)"
-                    ),
-                    hovertemplate=(
-                        "Date: %{x|%d %b %Y}"
-                        "<br>Rides: %{y}"
-                        "<extra></extra>"
-                    ),
+                    line=dict(color="#FFD21F", width=2.5),
+                    fillcolor="rgba(255,210,31,0.10)",
+                    hovertemplate="Date: %{x|%d %b %Y}<br>Rides: %{y}<extra></extra>",
                 )
+                fig.update_layout(xaxis_title="Date", yaxis_title="Ride Count")
+                show_chart(apply_theme(fig), "overview_daily")
 
-                fig.update_layout(
-                    xaxis_title="Date",
-                    yaxis_title="Ride Count",
-                )
+        chart_title("Business Insights")
+        insights = st.columns(4, gap="medium")
+        hourly = hourly_data(filtered)
+        peak_hour = "Unavailable"
+        if not hourly.empty:
+            peak_hour = f"{int(hourly.loc[hourly['rides'].idxmax(), 'hour']):02d}:00"
 
-                show_chart(
-                    apply_theme(fig),
-                    "overview_daily",
-                )
+        service_counts = filtered["services"].dropna().astype(str).str.strip().value_counts()
+        leading_service = service_counts.index[0] if not service_counts.empty else "Unavailable"
 
-
-        # ------------------------------
-        # Insights
-        # ------------------------------
-
-        chart_title(
-            "Business Insights"
-        )
-
-        insights = st.columns(
-            4,
-            gap="medium",
-        )
-
-        hourly = hourly_data(
-            filtered
-        )
-
-        if hourly.empty:
-            peak_hour = "Unavailable"
-        else:
-            row = hourly.loc[
-                hourly["rides"].idxmax()
-            ]
-            peak_hour = (
-                f"{int(row['hour']):02d}:00"
-            )
-
-        service_counts = (
-            filtered["services"]
-            .dropna()
-            .astype(str)
-            .str.strip()
-            .value_counts()
-        )
-
-        leading_service = (
-            service_counts.index[0]
-            if not service_counts.empty
-            else "Unavailable"
-        )
-
-        cancellation_rate = safe_pct(
-            cancellation_count,
-            total_rides,
-        )
-
-        insight_card(
-            insights[0],
-            "Peak Demand Hour",
-            peak_hour,
-        )
-
-        insight_card(
-            insights[1],
-            "Leading Service",
-            leading_service,
-        )
-
-        insight_card(
-            insights[2],
-            "Completion Rate",
-            f"{completion_rate:.1f}%",
-        )
-
-        insight_card(
-            insights[3],
-            "Cancellation Rate",
-            f"{cancellation_rate:.1f}%",
-        )
+        insight_card(insights[0], "Peak Demand Hour", peak_hour)
+        insight_card(insights[1], "Leading Service", leading_service)
+        insight_card(insights[2], "Completion Rate", f"{completion_rate:.1f}%")
+        insight_card(insights[3], "Cancellation Rate", f"{cancellation_rate:.1f}%")
 
 
 # ============================================================
-# 13. DEMAND
+# DEMAND
 # ============================================================
 
 elif nav == "Demand":
-
     page_header(
         "Demand Analytics",
         "When Rides Happen",
@@ -1551,281 +699,55 @@ elif nav == "Demand":
 
     if filtered.empty:
         show_empty()
-
     else:
+        c1, c2 = st.columns(2, gap="medium")
 
-        col1, col2 = st.columns(
-            2,
-            gap="medium",
+        with c1:
+            chart_title("Ride Demand by Hour")
+            hourly = hourly_data(filtered)
+            fig = px.line(hourly, x="hour", y="rides", markers=True)
+            fig.update_traces(line=dict(color="#FFD21F", width=3), marker=dict(color="#FFD21F", size=7))
+            fig.update_layout(xaxis_title="Hour", yaxis_title="Ride Count", xaxis=dict(tickmode="linear", tick0=0, dtick=2))
+            show_chart(apply_theme(fig, 350), "demand_hour")
+
+        with c2:
+            chart_title("Rides by Day of Week")
+            weekday = filtered.dropna(subset=["date"]).copy()
+            weekday["day_number"] = weekday["date"].dt.dayofweek
+            weekday["day"] = weekday["date"].dt.day_name()
+            weekday_counts = weekday.groupby(["day_number", "day"], as_index=False).size().rename(columns={"size": "rides"})
+            order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+            fig = px.bar(weekday_counts, x="day", y="rides")
+            fig.update_traces(marker_color="#FFD21F")
+            fig.update_layout(xaxis_title="Day", yaxis_title="Ride Count", xaxis=dict(categoryorder="array", categoryarray=order))
+            show_chart(apply_theme(fig, 350), "demand_weekday")
+
+        chart_title("Demand by Service and Hour")
+        heat = filtered.dropna(subset=["_hour", "services"]).copy()
+        heat["hour"] = pd.to_numeric(heat["_hour"], errors="coerce").round().astype(int).clip(0, 23)
+        heat_data = heat.groupby(["services", "hour"], as_index=False).size().rename(columns={"size": "rides"})
+        fig = px.density_heatmap(
+            heat_data, x="hour", y="services", z="rides",
+            color_continuous_scale=["#181818", "#6D5B00", "#FFD21F"]
         )
+        fig.update_layout(xaxis_title="Hour", yaxis_title="Service")
+        show_chart(apply_theme(fig, 390), "demand_heatmap")
 
-        # ------------------------------
-        # Hour
-        # ------------------------------
-
-        with col1:
-
-            chart_title(
-                "Ride Demand by Hour"
-            )
-
-            hourly = hourly_data(
-                filtered
-            )
-
-            if hourly.empty:
-                show_empty()
-
-            else:
-
-                fig = px.line(
-                    hourly,
-                    x="hour",
-                    y="rides",
-                    markers=True,
-                )
-
-                fig.update_traces(
-                    line=dict(
-                        color="#FFD21F",
-                        width=3,
-                    ),
-                    marker=dict(
-                        color="#FFD21F",
-                        size=7,
-                    ),
-                )
-
-                fig.update_layout(
-                    xaxis_title="Hour",
-                    yaxis_title="Ride Count",
-                    xaxis=dict(
-                        tickmode="linear",
-                        tick0=0,
-                        dtick=2,
-                    ),
-                )
-
-                show_chart(
-                    apply_theme(fig, 350),
-                    "demand_hour",
-                )
-
-        # ------------------------------
-        # Weekday
-        # ------------------------------
-
-        with col2:
-
-            chart_title(
-                "Rides by Day of Week"
-            )
-
-            weekday = filtered.dropna(
-                subset=["date"]
-            ).copy()
-
-            if weekday.empty:
-                show_empty()
-
-            else:
-
-                weekday["day_number"] = (
-                    weekday["date"]
-                    .dt.dayofweek
-                )
-
-                weekday["day"] = (
-                    weekday["date"]
-                    .dt.day_name()
-                )
-
-                weekday_counts = (
-                    weekday.groupby(
-                        [
-                            "day_number",
-                            "day",
-                        ],
-                        as_index=False,
-                    )
-                    .size()
-                    .rename(
-                        columns={
-                            "size": "rides"
-                        }
-                    )
-                    .sort_values(
-                        "day_number"
-                    )
-                )
-
-                order = [
-                    "Monday",
-                    "Tuesday",
-                    "Wednesday",
-                    "Thursday",
-                    "Friday",
-                    "Saturday",
-                    "Sunday",
-                ]
-
-                fig = px.bar(
-                    weekday_counts,
-                    x="day",
-                    y="rides",
-                )
-
-                fig.update_traces(
-                    marker_color="#FFD21F"
-                )
-
-                fig.update_layout(
-                    xaxis_title="Day",
-                    yaxis_title="Ride Count",
-                    xaxis=dict(
-                        categoryorder="array",
-                        categoryarray=order,
-                    ),
-                )
-
-                show_chart(
-                    apply_theme(fig, 350),
-                    "demand_weekday",
-                )
-
-
-        # ------------------------------
-        # Service / Hour
-        # ------------------------------
-
-        chart_title(
-            "Demand by Service and Hour"
-        )
-
-        heat = filtered.dropna(
-            subset=[
-                "_hour",
-                "services",
-            ]
-        ).copy()
-
-        if heat.empty:
-            show_empty()
-
-        else:
-
-            heat["hour"] = (
-                pd.to_numeric(
-                    heat["_hour"],
-                    errors="coerce",
-                )
-                .round()
-                .astype(int)
-                .clip(0, 23)
-            )
-
-            heat_data = (
-                heat.groupby(
-                    [
-                        "services",
-                        "hour",
-                    ],
-                    as_index=False,
-                )
-                .size()
-                .rename(
-                    columns={
-                        "size": "rides"
-                    }
-                )
-            )
-
-            fig = px.density_heatmap(
-                heat_data,
-                x="hour",
-                y="services",
-                z="rides",
-                color_continuous_scale=[
-                    "#181818",
-                    "#6D5B00",
-                    "#FFD21F",
-                ],
-            )
-
-            fig.update_layout(
-                xaxis_title="Hour",
-                yaxis_title="Service",
-            )
-
-            show_chart(
-                apply_theme(fig, 390),
-                "demand_heatmap",
-            )
-
-
-        # ------------------------------
-        # Monthly Volume
-        # ------------------------------
-
-        chart_title(
-            "Monthly Ride Volume"
-        )
-
-        monthly = filtered.dropna(
-            subset=["date"]
-        ).copy()
-
-        if monthly.empty:
-            show_empty()
-
-        else:
-
-            monthly["month"] = (
-                monthly["date"]
-                .dt.to_period("M")
-                .astype(str)
-            )
-
-            monthly_counts = (
-                monthly.groupby(
-                    "month",
-                    as_index=False,
-                )
-                .size()
-                .rename(
-                    columns={
-                        "size": "rides"
-                    }
-                )
-            )
-
-            fig = px.bar(
-                monthly_counts,
-                x="month",
-                y="rides",
-            )
-
-            fig.update_traces(
-                marker_color="#FFD21F"
-            )
-
-            fig.update_layout(
-                xaxis_title="Month",
-                yaxis_title="Ride Count",
-            )
-
-            show_chart(
-                apply_theme(fig, 350),
-                "demand_monthly",
-            )
+        chart_title("Monthly Ride Volume")
+        monthly = filtered.dropna(subset=["date"]).copy()
+        monthly["month"] = monthly["date"].dt.to_period("M").astype(str)
+        monthly_counts = monthly.groupby("month", as_index=False).size().rename(columns={"size": "rides"})
+        fig = px.bar(monthly_counts, x="month", y="rides")
+        fig.update_traces(marker_color="#FFD21F")
+        fig.update_layout(xaxis_title="Month", yaxis_title="Ride Count")
+        show_chart(apply_theme(fig, 350), "demand_monthly")
 
 
 # ============================================================
-# 14. REVENUE
+# REVENUE
 # ============================================================
 
 elif nav == "Revenue":
-
     page_header(
         "Revenue Analytics",
         "Revenue & Fare Performance",
@@ -1834,278 +756,60 @@ elif nav == "Revenue":
 
     if filtered.empty:
         show_empty()
-
     else:
-
-        completed = completed_only(
-            filtered
-        )
-
-        if completed.empty:
-            st.markdown(
-                """
-                <div class="empty-state">
-                    No completed rides available for revenue analysis
-                    under the selected filters.
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
+        done = completed_only(filtered)
+        if done.empty:
+            show_empty()
         else:
+            c1, c2 = st.columns([1.5, 1], gap="medium")
 
-            col1, col2 = st.columns(
-                [1.5, 1],
-                gap="medium",
-            )
-
-            # --------------------------
-            # Daily Revenue
-            # --------------------------
-
-            with col1:
-
-                chart_title(
-                    "Daily Revenue Trend"
+            with c1:
+                chart_title("Daily Revenue Trend")
+                revenue = daily_revenue(filtered)
+                fig = px.area(revenue, x="date", y="revenue")
+                fig.update_traces(
+                    line=dict(color="#FFD21F", width=2.5),
+                    fillcolor="rgba(255,210,31,0.10)",
+                    hovertemplate="Date: %{x|%d %b %Y}<br>Revenue: ₹%{y:,.0f}<extra></extra>",
                 )
+                fig.update_layout(xaxis_title="Date", yaxis_title="Revenue")
+                show_chart(apply_theme(fig, 350), "revenue_daily")
 
-                revenue = daily_revenue(
-                    filtered
-                )
+            with c2:
+                chart_title("Revenue by Payment Method")
+                payment = done.dropna(subset=["total_fare"]).copy()
+                payment["payment"] = payment["payment_method"].fillna("Unknown")
+                payment_revenue = payment.groupby("payment", as_index=False)["total_fare"].sum().rename(columns={"total_fare": "revenue"}).sort_values("revenue", ascending=False)
+                fig = px.bar(payment_revenue, x="revenue", y="payment", orientation="h")
+                fig.update_traces(marker_color="#FFD21F")
+                fig.update_layout(xaxis_title="Revenue", yaxis_title="Payment Method")
+                show_chart(apply_theme(fig, 350), "revenue_payment")
 
-                if revenue.empty:
-                    show_empty()
+            c3, c4 = st.columns(2, gap="medium")
 
-                else:
+            with c3:
+                chart_title("Average Fare by Service")
+                fare_service = done.dropna(subset=["total_fare"]).copy()
+                fare_service["service"] = fare_service["services"].fillna("Unknown")
+                fare_service = fare_service.groupby("service", as_index=False)["total_fare"].mean().rename(columns={"total_fare": "average_fare"}).sort_values("average_fare")
+                fig = px.bar(fare_service, x="average_fare", y="service", orientation="h")
+                fig.update_traces(marker_color="#FFD21F")
+                fig.update_layout(xaxis_title="Average Fare", yaxis_title="Service")
+                show_chart(apply_theme(fig, 350), "revenue_average_fare")
 
-                    fig = px.area(
-                        revenue,
-                        x="date",
-                        y="revenue",
-                    )
-
-                    fig.update_traces(
-                        line=dict(
-                            color="#FFD21F",
-                            width=2.5,
-                        ),
-                        fillcolor=(
-                            "rgba(255,210,31,0.10)"
-                        ),
-                        hovertemplate=(
-                            "Date: %{x|%d %b %Y}"
-                            "<br>Revenue: ₹%{y:,.0f}"
-                            "<extra></extra>"
-                        ),
-                    )
-
-                    fig.update_layout(
-                        xaxis_title="Date",
-                        yaxis_title="Revenue",
-                    )
-
-                    show_chart(
-                        apply_theme(fig, 350),
-                        "revenue_daily",
-                    )
-
-            # --------------------------
-            # Payment Method
-            # --------------------------
-
-            with col2:
-
-                chart_title(
-                    "Revenue by Payment Method"
-                )
-
-                payment = (
-                    completed
-                    .dropna(
-                        subset=["total_fare"]
-                    )
-                    .copy()
-                )
-
-                payment["payment"] = (
-                    payment[
-                        "payment_method"
-                    ].fillna("Unknown")
-                )
-
-                payment_revenue = (
-                    payment.groupby(
-                        "payment",
-                        as_index=False,
-                    )["total_fare"]
-                    .sum()
-                    .rename(
-                        columns={
-                            "total_fare":
-                            "revenue"
-                        }
-                    )
-                    .sort_values(
-                        "revenue",
-                        ascending=False,
-                    )
-                )
-
-                if payment_revenue.empty:
-                    show_empty()
-
-                else:
-
-                    fig = px.bar(
-                        payment_revenue,
-                        x="revenue",
-                        y="payment",
-                        orientation="h",
-                    )
-
-                    fig.update_traces(
-                        marker_color="#FFD21F"
-                    )
-
-                    fig.update_layout(
-                        xaxis_title="Revenue",
-                        yaxis_title="Payment Method",
-                    )
-
-                    show_chart(
-                        apply_theme(fig, 350),
-                        "revenue_payment",
-                    )
-
-
-            col3, col4 = st.columns(
-                2,
-                gap="medium",
-            )
-
-            # --------------------------
-            # Average Fare
-            # --------------------------
-
-            with col3:
-
-                chart_title(
-                    "Average Fare by Service"
-                )
-
-                fare_service = (
-                    completed
-                    .dropna(
-                        subset=["total_fare"]
-                    )
-                    .copy()
-                )
-
-                fare_service["service"] = (
-                    fare_service[
-                        "services"
-                    ].fillna("Unknown")
-                )
-
-                fare_service = (
-                    fare_service.groupby(
-                        "service",
-                        as_index=False,
-                    )["total_fare"]
-                    .mean()
-                    .rename(
-                        columns={
-                            "total_fare":
-                            "average_fare"
-                        }
-                    )
-                    .sort_values(
-                        "average_fare",
-                        ascending=True,
-                    )
-                )
-
-                if fare_service.empty:
-                    show_empty()
-
-                else:
-
-                    fig = px.bar(
-                        fare_service,
-                        x="average_fare",
-                        y="service",
-                        orientation="h",
-                    )
-
-                    fig.update_traces(
-                        marker_color="#FFD21F"
-                    )
-
-                    fig.update_layout(
-                        xaxis_title="Average Fare",
-                        yaxis_title="Service",
-                    )
-
-                    show_chart(
-                        apply_theme(fig, 350),
-                        "revenue_average_fare",
-                    )
-
-            # --------------------------
-            # Fare Distribution
-            # --------------------------
-
-            with col4:
-
-                chart_title(
-                    "Fare Distribution"
-                )
-
-                fares = (
-                    completed[
-                        "total_fare"
-                    ]
-                    .dropna()
-                )
-
-                if fares.empty:
-                    show_empty()
-
-                else:
-
-                    fig = go.Figure()
-
-                    fig.add_trace(
-                        go.Histogram(
-                            x=fares,
-                            nbinsx=30,
-                            marker=dict(
-                                color="#FFD21F",
-                                line=dict(
-                                    color="#111111",
-                                    width=0.5,
-                                ),
-                            ),
-                        )
-                    )
-
-                    fig.update_layout(
-                        xaxis_title="Fare",
-                        yaxis_title="Ride Count",
-                    )
-
-                    show_chart(
-                        apply_theme(fig, 350),
-                        "revenue_distribution",
-                    )
+            with c4:
+                chart_title("Fare Distribution")
+                fares = done["total_fare"].dropna()
+                fig = go.Figure(go.Histogram(x=fares, nbinsx=30, marker=dict(color="#FFD21F", line=dict(color="#111111", width=.5))))
+                fig.update_layout(xaxis_title="Fare", yaxis_title="Ride Count")
+                show_chart(apply_theme(fig, 350), "revenue_distribution")
 
 
 # ============================================================
-# 15. OPERATIONS
+# OPERATIONS
 # ============================================================
 
 elif nav == "Operations":
-
     page_header(
         "Operations Analytics",
         "Operational Performance",
@@ -2114,451 +818,68 @@ elif nav == "Operations":
 
     if filtered.empty:
         show_empty()
-
     else:
+        c1, c2 = st.columns([1.25, 1], gap="medium")
 
-        col1, col2 = st.columns(
-            [1.25, 1],
-            gap="medium",
-        )
-
-        # ------------------------------
-        # Status by Service
-        # ------------------------------
-
-        with col1:
-
-            chart_title(
-                "Ride Status by Service"
-            )
-
+        with c1:
+            chart_title("Ride Status by Service")
             status_service = (
                 filtered.assign(
-                    service=filtered[
-                        "services"
-                    ].fillna("Unknown"),
-                    status=filtered[
-                        "_status_clean"
-                    ],
+                    service=filtered["services"].fillna("Unknown"),
+                    status=filtered["_status_clean"]
                 )
-                .groupby(
-                    [
-                        "service",
-                        "status",
-                    ],
-                    as_index=False,
-                )
-                .size()
-                .rename(
-                    columns={
-                        "size": "rides"
-                    }
-                )
+                .groupby(["service", "status"], as_index=False).size()
+                .rename(columns={"size": "rides"})
             )
-
-            if status_service.empty:
-                show_empty()
-
-            else:
-
-                fig = px.bar(
-                    status_service,
-                    x="service",
-                    y="rides",
-                    color="status",
-                    barmode="stack",
-                    color_discrete_map={
-                        "Completed": "#FFD21F",
-                        "Cancelled": "#444444",
-                    },
-                )
-
-                for trace in fig.data:
-                    if trace.name not in {
-                        "Completed",
-                        "Cancelled",
-                    }:
-                        trace.marker.color = "#777777"
-
-                fig.update_layout(
-                    xaxis_title="Service",
-                    yaxis_title="Ride Count",
-                )
-
-                show_chart(
-                    apply_theme(fig, 370),
-                    "operations_status",
-                )
-
-
-        # ------------------------------
-        # Duration
-        # ------------------------------
-
-        with col2:
-
-            chart_title(
-                "Trip Duration Distribution"
+            fig = px.bar(
+                status_service, x="service", y="rides", color="status",
+                barmode="stack",
+                color_discrete_map={"Completed": "#FFD21F", "Cancelled": "#444444"}
             )
+            fig.update_layout(xaxis_title="Service", yaxis_title="Ride Count")
+            show_chart(apply_theme(fig, 370), "operations_status")
 
-            durations = pd.to_numeric(
-                filtered["duration"],
-                errors="coerce",
-            ).dropna()
+        with c2:
+            chart_title("Trip Duration Distribution")
+            durations = pd.to_numeric(filtered["duration"], errors="coerce").dropna()
+            durations = durations[np.isfinite(durations)]
+            fig = go.Figure(go.Histogram(x=durations, nbinsx=30, marker=dict(color="#FFD21F", line=dict(color="#111111", width=.5))))
+            fig.update_layout(xaxis_title="Duration", yaxis_title="Ride Count")
+            show_chart(apply_theme(fig, 370), "operations_duration")
 
-            durations = durations[
-                np.isfinite(durations)
-            ]
+        c3, c4 = st.columns(2, gap="medium")
 
-            if durations.empty:
-                show_empty()
-
-            else:
-
-                fig = go.Figure()
-
-                fig.add_trace(
-                    go.Histogram(
-                        x=durations,
-                        nbinsx=30,
-                        marker=dict(
-                            color="#FFD21F",
-                            line=dict(
-                                color="#111111",
-                                width=0.5,
-                            ),
-                        ),
-                    )
-                )
-
-                fig.update_layout(
-                    xaxis_title="Duration",
-                    yaxis_title="Ride Count",
-                )
-
-                show_chart(
-                    apply_theme(fig, 370),
-                    "operations_duration",
-                )
-
-
-        col3, col4 = st.columns(
-            2,
-            gap="medium",
-        )
-
-        # ------------------------------
-        # Completion by Service
-        # ------------------------------
-
-        with col3:
-
-            chart_title(
-                "Completion Rate by Service"
-            )
-
-            service_stats = (
-                filtered.assign(
-                    service=filtered[
-                        "services"
-                    ].fillna("Unknown")
-                )
+        with c3:
+            chart_title("Completion Rate by Service")
+            stats = (
+                filtered.assign(service=filtered["services"].fillna("Unknown"))
                 .groupby("service")
-                .agg(
-                    total=(
-                        "ride_id",
-                        "size",
-                    ),
-                    completed=(
-                        "_is_completed",
-                        "sum",
-                    ),
-                )
+                .agg(total=("ride_id", "size"), completed=("_is_completed", "sum"))
                 .reset_index()
             )
-
-            if service_stats.empty:
-                show_empty()
-
-            else:
-
-                service_stats[
-                    "completion_rate"
-                ] = (
-                    service_stats["completed"]
-                    / service_stats["total"]
-                    .replace(0, np.nan)
-                    * 100
-                ).fillna(0)
-
-                service_stats = (
-                    service_stats
-                    .sort_values(
-                        "completion_rate"
-                    )
-                )
-
-                fig = px.bar(
-                    service_stats,
-                    x="completion_rate",
-                    y="service",
-                    orientation="h",
-                )
-
-                fig.update_traces(
-                    marker_color="#FFD21F"
-                )
-
-                fig.update_layout(
-                    xaxis_title="Completion Rate (%)",
-                    yaxis_title="Service",
-                    xaxis=dict(
-                        range=[0, 100]
-                    ),
-                )
-
-                show_chart(
-                    apply_theme(fig, 370),
-                    "operations_completion",
-                )
-
-
-        # ------------------------------
-        # Cancellation by Hour
-        # ------------------------------
-
-        with col4:
-
-            chart_title(
-                "Cancellation Rate by Hour"
-            )
-
-            hour_data = filtered.dropna(
-                subset=["_hour"]
-            ).copy()
-
-            if hour_data.empty:
-                show_empty()
-
-            else:
-
-                hour_data["hour"] = (
-                    pd.to_numeric(
-                        hour_data["_hour"],
-                        errors="coerce",
-                    )
-                    .round()
-                    .astype(int)
-                    .clip(0, 23)
-                )
-
-                stats = (
-                    hour_data.groupby("hour")
-                    .agg(
-                        total=(
-                            "ride_id",
-                            "size",
-                        ),
-                        cancelled=(
-                            "_is_cancelled",
-                            "sum",
-                        ),
-                    )
-                    .reset_index()
-                )
-
-                stats[
-                    "cancellation_rate"
-                ] = (
-                    stats["cancelled"]
-                    / stats["total"]
-                    .replace(0, np.nan)
-                    * 100
-                ).fillna(0)
-
-                fig = px.line(
-                    stats,
-                    x="hour",
-                    y="cancellation_rate",
-                    markers=True,
-                )
-
-                fig.update_traces(
-                    line=dict(
-                        color="#FFD21F",
-                        width=3,
-                    ),
-                    marker=dict(
-                        color="#FFD21F",
-                        size=7,
-                    ),
-                )
-
-                fig.update_layout(
-                    xaxis_title="Hour",
-                    yaxis_title="Cancellation Rate (%)",
-                    xaxis=dict(
-                        tickmode="linear",
-                        tick0=0,
-                        dtick=2,
-                    ),
-                )
-
-                show_chart(
-                    apply_theme(fig, 370),
-                    "operations_cancellation",
-                )
-
-
-# ============================================================
-# 16. LOCATIONS
-# ============================================================
-
-elif nav == "Data Quality":
-
-    page_header(
-        "Data Quality Audit",
-        "Can This Data Be Trusted?",
-        "Checks whether fares, distances and durations behave like real ride-hailing data.",
-    )
-
-    done = completed_only(filtered)
-
-    if done.empty:
-        show_empty()
-
-    else:
-
-        done = done[
-            (done["distance"] > 0)
-            & (done["duration"] > 0)
-        ].copy()
-
-        corr = done["distance"].corr(done["total_fare"])
-        corr_text = "n/a" if pd.isna(corr) else f"{corr:+.3f}"
-
-        speed = done["distance"] / (done["duration"] / 60)
-        fast_pct = safe_pct((speed > 80).sum(), len(done))
-
-        missing_fares = int(
-            filtered["total_fare"].isna().sum()
-        )
-
-        route_counts = filtered.groupby(
-            ["source", "destination"]
-        ).size()
-
-        repeat_routes = int((route_counts > 1).sum())
-
-        dq = st.columns(4, gap="medium")
-
-        kpi_card(
-            dq[0],
-            "Fare vs Distance",
-            corr_text,
-            "Correlation (real pricing is ~ +0.9)",
-            accent=True,
-        )
-
-        kpi_card(
-            dq[1],
-            "Impossible Speeds",
-            f"{fast_pct:.1f}%",
-            "Completed rides above 80 km/h",
-        )
-
-        kpi_card(
-            dq[2],
-            "Missing Fares",
-            format_number(missing_fares),
-            "Cancelled rides, excluded from revenue",
-        )
-
-        kpi_card(
-            dq[3],
-            "Repeated Routes",
-            format_number(repeat_routes),
-            "Routes seen more than once",
-        )
-
-        st.markdown(
-            "<div style='height:0.8rem'></div>",
-            unsafe_allow_html=True,
-        )
-
-        col1, col2 = st.columns(2, gap="medium")
-
-        with col1:
-
-            chart_title("Fare vs Distance (sample of completed rides)")
-
-            sample = done.sample(
-                min(3000, len(done)),
-                random_state=1,
-            )
-
-            fig = px.scatter(
-                sample,
-                x="distance",
-                y="total_fare",
-                opacity=0.35,
-            )
-
-            fig.update_traces(
-                marker=dict(color="#FFD21F", size=5)
-            )
-
-            fig.update_layout(
-                xaxis_title="Distance (km)",
-                yaxis_title="Total Fare (INR)",
-            )
-
-            show_chart(apply_theme(fig), "dq_scatter")
-
-        with col2:
-
-            chart_title("Average Fare by Distance Band")
-
-            bands = (
-                done.assign(
-                    band=pd.cut(
-                        done["distance"],
-                        [0, 10, 20, 30, 40, 50],
-                        labels=[
-                            "0-10", "10-20", "20-30",
-                            "30-40", "40-50",
-                        ],
-                    )
-                )
-                .groupby("band", observed=True, as_index=False)
-                .agg(avg_fare=("total_fare", "mean"))
-            )
-
-            fig = px.bar(
-                bands,
-                x="band",
-                y="avg_fare",
-            )
-
+            stats["completion_rate"] = (stats["completed"] / stats["total"].replace(0, np.nan) * 100).fillna(0)
+            fig = px.bar(stats.sort_values("completion_rate"), x="completion_rate", y="service", orientation="h")
             fig.update_traces(marker_color="#FFD21F")
+            fig.update_layout(xaxis_title="Completion Rate (%)", yaxis_title="Service", xaxis=dict(range=[0, 100]))
+            show_chart(apply_theme(fig, 370), "operations_completion")
 
-            fig.update_layout(
-                xaxis_title="Distance Band (km)",
-                yaxis_title="Average Fare (INR)",
-            )
+        with c4:
+            chart_title("Cancellation Rate by Hour")
+            hd = filtered.dropna(subset=["_hour"]).copy()
+            hd["hour"] = pd.to_numeric(hd["_hour"], errors="coerce").round().astype(int).clip(0, 23)
+            stats = hd.groupby("hour").agg(total=("ride_id", "size"), cancelled=("_is_cancelled", "sum")).reset_index()
+            stats["cancellation_rate"] = (stats["cancelled"] / stats["total"].replace(0, np.nan) * 100).fillna(0)
+            fig = px.line(stats, x="hour", y="cancellation_rate", markers=True)
+            fig.update_traces(line=dict(color="#FFD21F", width=3), marker=dict(color="#FFD21F", size=7))
+            fig.update_layout(xaxis_title="Hour", yaxis_title="Cancellation Rate (%)", xaxis=dict(tickmode="linear", tick0=0, dtick=2))
+            show_chart(apply_theme(fig, 370), "operations_cancellation")
 
-            show_chart(apply_theme(fig), "dq_bands")
 
-        st.info(
-            "Finding: fare does not rise with distance, and some trips "
-            "imply speeds far above any real vehicle. This suggests "
-            "synthetic data or a broken pricing pipeline, so treat "
-            "pricing-based insights with caution. Cancellation "
-            "leakage remains reliable."
-        )
+# ============================================================
+# LOCATIONS
+# ============================================================
 
 elif nav == "Locations":
-
     page_header(
         "Location Analytics",
         "Pickup, Destination & Route Intelligence",
@@ -2567,319 +888,174 @@ elif nav == "Locations":
 
     if filtered.empty:
         show_empty()
-
     else:
+        c1, c2 = st.columns(2, gap="medium")
 
-        col1, col2 = st.columns(
-            2,
-            gap="medium",
-        )
-
-        # ------------------------------
-        # Pickup
-        # ------------------------------
-
-        with col1:
-
-            chart_title(
-                "Top Pickup Locations"
-            )
-
+        with c1:
+            chart_title("Top Pickup Locations")
             pickup = (
-                filtered.assign(
-                    location=filtered[
-                        "source"
-                    ].fillna("Unknown")
-                )
-                .groupby(
-                    "location",
-                    as_index=False,
-                )
-                .size()
-                .rename(
-                    columns={
-                        "size": "rides"
-                    }
-                )
-                .sort_values(
-                    "rides",
-                    ascending=False,
-                )
-                .head(10)
-                .sort_values(
-                    "rides",
-                    ascending=True,
-                )
+                filtered.assign(location=filtered["source"].fillna("Unknown"))
+                .groupby("location", as_index=False).size()
+                .rename(columns={"size": "rides"})
+                .sort_values("rides", ascending=False).head(10)
+                .sort_values("rides")
             )
+            fig = px.bar(pickup, x="rides", y="location", orientation="h")
+            fig.update_traces(marker_color="#FFD21F")
+            fig.update_layout(xaxis_title="Ride Count", yaxis_title="Pickup Location")
+            show_chart(apply_theme(fig, 390), "locations_pickup")
 
-            if pickup.empty:
-                show_empty()
-
-            else:
-
-                fig = px.bar(
-                    pickup,
-                    x="rides",
-                    y="location",
-                    orientation="h",
-                )
-
-                fig.update_traces(
-                    marker_color="#FFD21F"
-                )
-
-                fig.update_layout(
-                    xaxis_title="Ride Count",
-                    yaxis_title="Pickup Location",
-                )
-
-                show_chart(
-                    apply_theme(fig, 390),
-                    "locations_pickup",
-                )
-
-
-        # ------------------------------
-        # Destination
-        # ------------------------------
-
-        with col2:
-
-            chart_title(
-                "Top Destination Locations"
-            )
-
+        with c2:
+            chart_title("Top Destination Locations")
             destination = (
-                filtered.assign(
-                    location=filtered[
-                        "destination"
-                    ].fillna("Unknown")
-                )
-                .groupby(
-                    "location",
-                    as_index=False,
-                )
-                .size()
-                .rename(
-                    columns={
-                        "size": "rides"
-                    }
-                )
-                .sort_values(
-                    "rides",
-                    ascending=False,
-                )
-                .head(10)
-                .sort_values(
-                    "rides",
-                    ascending=True,
-                )
+                filtered.assign(location=filtered["destination"].fillna("Unknown"))
+                .groupby("location", as_index=False).size()
+                .rename(columns={"size": "rides"})
+                .sort_values("rides", ascending=False).head(10)
+                .sort_values("rides")
             )
+            fig = px.bar(destination, x="rides", y="location", orientation="h")
+            fig.update_traces(marker_color="#FFD21F")
+            fig.update_layout(xaxis_title="Ride Count", yaxis_title="Destination")
+            show_chart(apply_theme(fig, 390), "locations_destination")
 
-            if destination.empty:
-                show_empty()
-
-            else:
-
-                fig = px.bar(
-                    destination,
-                    x="rides",
-                    y="location",
-                    orientation="h",
-                )
-
-                fig.update_traces(
-                    marker_color="#FFD21F"
-                )
-
-                fig.update_layout(
-                    xaxis_title="Ride Count",
-                    yaxis_title="Destination",
-                )
-
-                show_chart(
-                    apply_theme(fig, 390),
-                    "locations_destination",
-                )
-
-
-        # ------------------------------
-        # Routes
-        # ------------------------------
-
-        chart_title(
-            "Top Routes"
-        )
-
+        chart_title("Top Routes")
         routes = filtered.copy()
-
-        routes["source_clean"] = (
-            routes["source"]
-            .fillna("Unknown")
-            .astype(str)
-            .str.strip()
-        )
-
-        routes["destination_clean"] = (
-            routes["destination"]
-            .fillna("Unknown")
-            .astype(str)
-            .str.strip()
-        )
-
-        routes["route"] = (
-            routes["source_clean"]
-            + " → "
-            + routes["destination_clean"]
-        )
-
-        route_counts = (
-            routes.groupby(
-                "route",
-                as_index=False,
-            )
-            .size()
-            .rename(
-                columns={
-                    "size": "rides"
-                }
-            )
-            .sort_values(
-                "rides",
-                ascending=False,
-            )
-            .head(15)
-            .sort_values(
-                "rides",
-                ascending=True,
-            )
-        )
-
-        if route_counts.empty:
-            show_empty()
-
-        else:
-
-            fig = px.bar(
-                route_counts,
-                x="rides",
-                y="route",
-                orientation="h",
-            )
-
-            fig.update_traces(
-                marker_color="#FFD21F"
-            )
-
-            fig.update_layout(
-                xaxis_title="Ride Count",
-                yaxis_title="Route",
-            )
-
-            show_chart(
-                apply_theme(fig, 470),
-                "locations_routes",
-            )
+        routes["source_clean"] = routes["source"].fillna("Unknown").astype(str).str.strip()
+        routes["destination_clean"] = routes["destination"].fillna("Unknown").astype(str).str.strip()
+        routes["route"] = routes["source_clean"] + " → " + routes["destination_clean"]
+        route_counts = routes.groupby("route", as_index=False).size().rename(columns={"size": "rides"}).sort_values("rides", ascending=False).head(15).sort_values("rides")
+        fig = px.bar(route_counts, x="rides", y="route", orientation="h")
+        fig.update_traces(marker_color="#FFD21F")
+        fig.update_layout(xaxis_title="Ride Count", yaxis_title="Route")
+        show_chart(apply_theme(fig, 470), "locations_routes")
 
 
 # ============================================================
-# 17. RIDE EXPLORER
+# DATA QUALITY
 # ============================================================
 
-st.markdown(
-    '<div class="section-divider"></div>',
-    unsafe_allow_html=True,
-)
-
-chart_title(
-    "Ride Explorer"
-)
-
-if filtered.empty:
-
-    show_empty()
-
-else:
-
-    explorer_columns = [
-        "ride_id",
-        "services",
-        "date",
-        "time",
-        "ride_status",
-        "source",
-        "destination",
-        "duration",
-        "distance",
-        "total_fare",
-        "payment_method",
-    ]
-
-    explorer = filtered[
-        explorer_columns
-    ].copy()
-
-    explorer = explorer.sort_values(
-        "date",
-        ascending=False,
-        na_position="last",
-    ).head(100)
-
-    explorer["date"] = (
-        explorer["date"]
-        .dt.strftime("%Y-%m-%d")
-        .fillna("")
+elif nav == "Data Quality":
+    page_header(
+        "Data Quality Audit",
+        "Can This Data Be Trusted?",
+        "Validate completeness, fare-distance relationships and operational plausibility.",
     )
 
-    st.dataframe(
-        explorer,
-        use_container_width=True,
-        hide_index=True,
-        height=min(
-            520,
-            80 + len(explorer) * 35,
-        ),
-        column_config={
-            "ride_id": st.column_config.TextColumn(
-                "Ride ID"
-            ),
-            "services": st.column_config.TextColumn(
-                "Service"
-            ),
-            "date": st.column_config.TextColumn(
-                "Date"
-            ),
-            "time": st.column_config.TextColumn(
-                "Time"
-            ),
-            "ride_status": st.column_config.TextColumn(
-                "Ride Status"
-            ),
-            "source": st.column_config.TextColumn(
-                "Source"
-            ),
-            "destination": st.column_config.TextColumn(
-                "Destination"
-            ),
-            "duration": st.column_config.NumberColumn(
-                "Duration",
-                format="%.2f",
-            ),
-            "distance": st.column_config.NumberColumn(
-                "Distance",
-                format="%.2f",
-            ),
-            "total_fare": st.column_config.NumberColumn(
-                "Total Fare",
-                format="₹%.2f",
-            ),
-            "payment_method": st.column_config.TextColumn(
-                "Payment Method"
-            ),
-        },
+    done = completed_only(filtered)
+    valid_done = done[(done["distance"] > 0) & (done["duration"] > 0)].copy()
+
+    if valid_done.empty:
+        show_empty()
+    else:
+        corr = valid_done["distance"].corr(valid_done["total_fare"])
+        corr_text = "n/a" if pd.isna(corr) else f"{corr:+.3f}"
+
+        speed = valid_done["distance"] / (valid_done["duration"] / 60)
+        fast_pct = safe_pct((speed > 80).sum(), len(valid_done))
+
+        missing_fares = int(filtered["total_fare"].isna().sum())
+        route_counts = filtered.groupby(["source", "destination"], dropna=False).size()
+        repeat_routes = int((route_counts > 1).sum())
+
+        dq = st.columns(4, gap="medium")
+        kpi_card(dq[0], "Fare vs Distance", corr_text, "Pearson correlation", True)
+        kpi_card(dq[1], "High-Speed Trips", f"{fast_pct:.1f}%", "Completed rides above 80 km/h")
+        kpi_card(dq[2], "Missing Fares", format_number(missing_fares), "Records with missing total fare")
+        kpi_card(dq[3], "Repeated Routes", format_number(repeat_routes), "Routes observed more than once")
+
+        c1, c2 = st.columns(2, gap="medium")
+
+        with c1:
+            chart_title("Fare vs Distance — Completed Rides")
+            sample = valid_done.sample(min(3000, len(valid_done)), random_state=1)
+            fig = px.scatter(sample, x="distance", y="total_fare", opacity=.35)
+            fig.update_traces(marker=dict(color="#FFD21F", size=5))
+            fig.update_layout(xaxis_title="Distance (km)", yaxis_title="Total Fare (INR)")
+            show_chart(apply_theme(fig), "dq_scatter")
+
+        with c2:
+            chart_title("Average Fare by Distance Band")
+            bands = (
+                valid_done.assign(
+                    band=pd.cut(
+                        valid_done["distance"],
+                        [0, 10, 20, 30, 40, 50, np.inf],
+                        labels=["0-10", "10-20", "20-30", "30-40", "40-50", "50+"],
+                    )
+                )
+                .groupby("band", observed=True, as_index=False)
+                .agg(avg_fare=("total_fare", "mean"))
+            )
+            fig = px.bar(bands, x="band", y="avg_fare")
+            fig.update_traces(marker_color="#FFD21F")
+            fig.update_layout(xaxis_title="Distance Band (km)", yaxis_title="Average Fare (INR)")
+            show_chart(apply_theme(fig), "dq_bands")
+
+        st.info(
+            "Quality note: this audit flags unusual fare-distance relationships "
+            "and unusually high implied speeds. These checks identify data-quality "
+            "signals; they do not by themselves prove that the underlying data is synthetic."
+        )
+
+
+# ============================================================
+# RIDE EXPLORER
+# ============================================================
+
+elif nav == "Ride Explorer":
+    page_header(
+        "Ride Explorer",
+        "Inspect Individual Rides",
+        "Search the filtered dataset at ride level.",
     )
 
-    st.caption(
-        f"Showing up to 100 filtered rides • "
-        f"{format_number(len(filtered))} rides match the current filters."
-    )
+    if filtered.empty:
+        show_empty()
+    else:
+        search = st.text_input(
+            "Search Ride ID / Source / Destination",
+            placeholder="e.g. RIDE123 or location name",
+        )
+
+        explorer = filtered.copy()
+
+        if search.strip():
+            term = search.strip().lower()
+            mask = (
+                explorer["ride_id"].astype(str).str.lower().str.contains(term, na=False)
+                | explorer["source"].astype(str).str.lower().str.contains(term, na=False)
+                | explorer["destination"].astype(str).str.lower().str.contains(term, na=False)
+            )
+            explorer = explorer[mask]
+
+        columns = [
+            "ride_id", "services", "date", "time", "ride_status",
+            "source", "destination", "duration", "distance",
+            "total_fare", "payment_method"
+        ]
+        explorer = explorer[columns].sort_values("date", ascending=False, na_position="last").head(100)
+        explorer["date"] = explorer["date"].dt.strftime("%Y-%m-%d").fillna("")
+
+        st.dataframe(
+            explorer,
+            use_container_width=True,
+            hide_index=True,
+            height=min(560, 100 + len(explorer) * 35),
+            column_config={
+                "ride_id": st.column_config.TextColumn("Ride ID"),
+                "services": st.column_config.TextColumn("Service"),
+                "date": st.column_config.TextColumn("Date"),
+                "time": st.column_config.TextColumn("Time"),
+                "ride_status": st.column_config.TextColumn("Ride Status"),
+                "source": st.column_config.TextColumn("Source"),
+                "destination": st.column_config.TextColumn("Destination"),
+                "duration": st.column_config.NumberColumn("Duration", format="%.2f"),
+                "distance": st.column_config.NumberColumn("Distance", format="%.2f"),
+                "total_fare": st.column_config.NumberColumn("Total Fare", format="₹%.2f"),
+                "payment_method": st.column_config.TextColumn("Payment Method"),
+            },
+        )
+        st.caption(
+            f"Showing up to 100 rides • {format_number(len(explorer))} rows shown."
+        )
