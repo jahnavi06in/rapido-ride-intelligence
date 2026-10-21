@@ -25,9 +25,9 @@
 
 
 
-[Live Dashboard](https://img.shields.io/badge/Live-Dashboard-FFD21F?style=flat&logo=streamlit&logoColor=black)
+Live Dashboard](https://img.shields.io/badge/Live-Dashboard-FFD21F?style=flat&logo=streamlit&logoColor=black)
 
-](https://rapido-ride-intelligence-po3rarnj2dd66w4pzlt94e.streamlit.app/)
+(https://rapido-ride-intelligence-po3rarnj2dd66w4pzlt94e.streamlit.app/)
 
 ## 🚀 Live Dashboard
 
