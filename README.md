@@ -88,8 +88,6 @@ Other headline numbers: 50,000 rides, 17 Jun to 16 Aug 2024, 89.9% completion ra
 
 **Locations**: top pickup locations, top destinations, and popular routes (Source → Destination). No external map data required.
 
-**Data Quality**: fare-vs-distance correlation, share of impossible speeds (>80 km/h), missing-fare count, repeated routes, a fare-vs-distance scatter plot, and average fare by distance band.
-
 **Ride Explorer**: filtered ride-level table (up to 100 records) with service, status, payment method, pickup, destination, fare and trip details.
 
 ## 🎛️ 7. Interactive Filters
