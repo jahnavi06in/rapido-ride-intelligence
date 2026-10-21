@@ -899,6 +899,13 @@ payments = available_values(
     df["payment_method"]
 )
 
+# "All Payment Methods" is intentionally included.
+# Cancelled rides have missing payment methods, so the
+# default option must not remove them from the dataset.
+payment_options = [
+    "All Payment Methods"
+] + payments
+
 with filter1:
     selected_services = st.multiselect(
         "Service",
@@ -918,8 +925,8 @@ with filter2:
 with filter3:
     selected_payments = st.multiselect(
         "Payment Method",
-        payments,
-        default=payments,
+        payment_options,
+        default=["All Payment Methods"],
         key="payment_filter",
     )
 
@@ -942,6 +949,90 @@ with filter4:
         )
 
 
+# ============================================================
+# 9. APPLY FILTERS
+# ============================================================
+
+filtered = df.copy()
+
+# ------------------------------------------------------------
+# Service filter
+# ------------------------------------------------------------
+
+if selected_services:
+    filtered = filtered[
+        filtered["services"]
+        .astype(str)
+        .isin(selected_services)
+    ]
+else:
+    filtered = filtered.iloc[0:0]
+
+
+# ------------------------------------------------------------
+# Ride status filter
+# ------------------------------------------------------------
+
+if selected_statuses:
+    filtered = filtered[
+        filtered["ride_status"]
+        .astype(str)
+        .isin(selected_statuses)
+    ]
+else:
+    filtered = filtered.iloc[0:0]
+
+
+# ------------------------------------------------------------
+# Payment method filter
+# ------------------------------------------------------------
+
+# IMPORTANT:
+# "All Payment Methods" means no payment-method filtering.
+# This preserves cancelled rides whose payment_method is blank.
+
+if (
+    selected_payments
+    and "All Payment Methods" not in selected_payments
+):
+    filtered = filtered[
+        filtered["payment_method"]
+        .astype(str)
+        .isin(selected_payments)
+    ]
+
+elif not selected_payments:
+    filtered = filtered.iloc[0:0]
+
+
+# ------------------------------------------------------------
+# Date filter
+# ------------------------------------------------------------
+
+if selected_period is not None and not filtered.empty:
+
+    if (
+        isinstance(selected_period, tuple)
+        and len(selected_period) == 2
+    ):
+        start_date, end_date = selected_period
+
+        filtered = filtered[
+            filtered["date"].notna()
+            & filtered["date"].dt.date.between(
+                start_date,
+                end_date,
+            )
+        ]
+
+    elif hasattr(selected_period, "year"):
+
+        filtered = filtered[
+            filtered["date"].notna()
+            & filtered["date"].dt.date.eq(
+                selected_period
+            )
+        ]
 # ============================================================
 # 9. APPLY FILTERS
 # ============================================================
