@@ -1,4 +1,4 @@
-# ````markdown
+
 # 🟡 Rapido Ride Intelligence
 
 **A business-focused mobility analytics dashboard that transforms ride-level data into interactive demand, revenue, operational and location insights.**
@@ -23,7 +23,7 @@
 ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=flat&logo=streamlit&logoColor=white)
 
 
-[
+
 
 ![Live Dashboard](https://img.shields.io/badge/Live-Dashboard-FFD21F?style=flat&logo=streamlit&logoColor=black)
 
